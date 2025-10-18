@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import '../models/workout.dart';
 import '../providers/workout_provider.dart';
+import '../providers/membership_provider.dart';
 import 'add_exercise_screen.dart';
 
 class CreateWorkoutScreen extends StatefulWidget {
@@ -39,6 +40,16 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
               if (!_form.currentState!.validate()) return;
               _form.currentState!.save();
 
+              // Check workout limit for basic users
+              final membershipProvider = context.read<MembershipProvider>();
+              final maxWorkouts = membershipProvider.getMaxWorkouts();
+              
+              if (maxWorkouts != -1 && prov.workouts.length >= maxWorkouts) {
+                _showUpgradeDialog(context, 'Workout Limit Reached', 
+                  'You\'ve reached the maximum of $maxWorkouts workouts on the Basic plan. Upgrade to Premium for unlimited workouts!');
+                return;
+              }
+
               // If routine mode, flatten all day exercises
               final allExercises = routineMode
                   ? routineDays.expand((d) => d.exercises).toList()
@@ -62,6 +73,16 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
       ),
       floatingActionButton: (!routineMode)
           ? _FABAdd(onTap: () async {
+              // Check exercise limit for basic users
+              final membershipProvider = context.read<MembershipProvider>();
+              final maxExercises = membershipProvider.getMaxExercisesPerWorkout();
+              
+              if (maxExercises != -1 && exercises.length >= maxExercises) {
+                _showUpgradeDialog(context, 'Exercise Limit Reached', 
+                  'You\'ve reached the maximum of $maxExercises exercises per workout on the Basic plan. Upgrade to Premium for unlimited exercises!');
+                return;
+              }
+
               final res = await Navigator.pushNamed(context, AddExerciseScreen.route)
                   as Map<String, dynamic>?;
               if (res != null) setState(() => exercises.add(res['exercise']));
@@ -193,6 +214,16 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
                 days: routineDays,
                 onAddDay: () => setState(() => routineDays.add(_RoutineDay.empty())),
                 onAddExercise: (day) async {
+                  // Check exercise limit for basic users
+                  final membershipProvider = context.read<MembershipProvider>();
+                  final maxExercises = membershipProvider.getMaxExercisesPerWorkout();
+                  
+                  if (maxExercises != -1 && day.exercises.length >= maxExercises) {
+                    _showUpgradeDialog(context, 'Exercise Limit Reached', 
+                      'You\'ve reached the maximum of $maxExercises exercises per workout on the Basic plan. Upgrade to Premium for unlimited exercises!');
+                    return;
+                  }
+
                   final res = await Navigator.pushNamed(context, AddExerciseScreen.route)
                       as Map<String, dynamic>?;
                   if (res != null) setState(() => day.exercises.add(res['exercise']));
@@ -202,6 +233,30 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
             const SizedBox(height: 80),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showUpgradeDialog(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Navigate to settings to upgrade
+              Navigator.pushNamed(context, '/settings');
+            },
+            child: const Text('Upgrade to Premium'),
+          ),
+        ],
       ),
     );
   }

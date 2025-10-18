@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 // Your app files (keep as you had them)
 import '../providers/workout_provider.dart';
+import '../providers/membership_provider.dart';
 import '../screens/create_workout_screen.dart';
 import '../screens/workout_detail_screen.dart';
 import '../utils/responsive.dart';
@@ -315,6 +316,67 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                 ),
               ],
             ),
+          ),
+
+          // Membership status indicator
+          Consumer<MembershipProvider>(
+            builder: (context, membershipProvider, child) {
+              final isPremium = membershipProvider.isPremium;
+              final maxWorkouts = membershipProvider.getMaxWorkouts();
+              final currentWorkouts = list.length;
+              
+              if (isPremium) return const SizedBox.shrink();
+              
+              return Padding(
+                padding: EdgeInsets.fromLTRB(
+                  pad.left, 
+                  pad.top * 0.5, 
+                  pad.right, 
+                  pad.bottom * 0.5,
+                ),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFF6B7280).withOpacity(0.1),
+                        const Color(0xFF9CA3AF).withOpacity(0.05),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFF6B7280).withOpacity(0.2),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        color: const Color(0xFF6B7280),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Basic Plan: $currentWorkouts/$maxWorkouts workouts used',
+                          style: TextStyle(
+                            color: const Color(0xFF6B7280),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pushNamed(context, '/settings'),
+                        child: const Text('Upgrade'),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
 
           // Results meta

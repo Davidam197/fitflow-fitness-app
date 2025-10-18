@@ -148,12 +148,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 24),
 
             _sectionTitle(context, 'Data & Storage'),
-            _Tile(
-              icon: Icons.download_outlined,
-              title: 'Export Data',
-              subtitle: 'Download your workout data',
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => _snack(context, 'Export coming soon'),
+            Consumer<MembershipProvider>(
+              builder: (context, membershipProvider, child) {
+                final canExport = membershipProvider.canExportData();
+                return _Tile(
+                  icon: Icons.download_outlined,
+                  title: 'Export Data',
+                  subtitle: canExport 
+                    ? 'Download your workout data'
+                    : 'Premium feature - Upgrade to export data',
+                  trailing: canExport 
+                    ? const Icon(Icons.chevron_right)
+                    : const Icon(Icons.lock, color: Colors.orange),
+                  onTap: canExport 
+                    ? () => _snack(context, 'Export coming soon')
+                    : () => _showUpgradeDialog(context, 'Premium Feature', 
+                        'Data export is a Premium feature. Upgrade to export your workout data!'),
+                );
+              },
             ),
             _Tile(
               icon: Icons.upload_outlined,
@@ -356,6 +368,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _snack(BuildContext context, String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  void _showUpgradeDialog(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // The membership options will be shown by tapping the membership card
+            },
+            child: const Text('Upgrade to Premium'),
+          ),
+        ],
+      ),
+    );
   }
 }
 
