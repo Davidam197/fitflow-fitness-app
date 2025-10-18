@@ -121,26 +121,25 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 1,
-        title: Flexible(
-          child: Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: Responsive.getSpacing(context),
-              vertical: Responsive.getSpacing(context) * 0.5,
+        title: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: Responsive.getSpacing(context),
+            vertical: Responsive.getSpacing(context) * 0.5,
+          ),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFF4E6CF8).withOpacity(0.1), // Blue accent
+                const Color(0xFF3ECF8E).withOpacity(0.05), // Green accent
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF4E6CF8).withOpacity(0.1), // Blue accent
-                  const Color(0xFF3ECF8E).withOpacity(0.05), // Green accent
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
-              border: Border.all(
-                color: const Color(0xFF4E6CF8).withOpacity(0.2),
-              ),
+            borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
+            border: Border.all(
+              color: const Color(0xFF4E6CF8).withOpacity(0.2),
             ),
+          ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -164,19 +163,16 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                 ),
               ),
               SizedBox(width: Responsive.getSpacing(context) * 0.5),
-              Flexible(
-                child: Text(
-                  'Workouts',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: Responsive.getTitleFontSize(context),
-                    color: const Color(0xFF0E1625), // Dark navy
-                  ),
-                  overflow: TextOverflow.ellipsis,
+              Text(
+                'Workouts',
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: Responsive.getTitleFontSize(context),
+                  color: const Color(0xFF0E1625), // Dark navy
                 ),
+                overflow: TextOverflow.ellipsis,
               ),
             ],
-          ),
           ),
         ),
         actions: [

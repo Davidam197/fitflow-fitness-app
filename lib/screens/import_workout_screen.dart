@@ -22,6 +22,13 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
   List<Workout> _previewWorkouts = [];
 
   @override
+  void initState() {
+    super.initState();
+    // Pre-fill with an example URL for testing
+    _urlController.text = 'https://www.muscleandfitness.com/routine/workouts/workout-routines/chris-hemsworths-god-thor-workout/';
+  }
+
+  @override
   void dispose() {
     _urlController.dispose();
     super.dispose();
@@ -380,7 +387,7 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
       
       if (workouts.isEmpty) {
         setState(() {
-          _errorMessage = 'No workout structure found. Try a different page.';
+          _errorMessage = 'No workout structure found. The page may not contain recognizable workout data with sets and reps.';
         });
         return;
       }
