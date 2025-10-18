@@ -92,7 +92,7 @@ class WebScrapingService {
 
       // Check if this is a workout header
       final isWorkoutHeader =
-          _isWorkoutHeader(text) && text.length < 100;
+          WebScrapingService._isWorkoutHeader(text) && text.length < 100;
 
       if (isWorkoutHeader) {
         // Save previous workout if it has exercises
@@ -112,13 +112,13 @@ class WebScrapingService {
         );
       } else if (currentWorkout != null) {
         // Try to extract exercise
-        final exercise = _parseExercise(text);
+        final exercise = WebScrapingService._parseExercise(text);
         if (exercise != null) {
           currentWorkout.exercises.add(exercise);
         }
       } else {
         // No workout header found yet, but found an exercise
-        final exercise = _parseExercise(text);
+        final exercise = WebScrapingService._parseExercise(text);
         if (exercise != null) {
           currentWorkout ??= Workout(
             id: DateTime.now().millisecondsSinceEpoch.toString(),

@@ -50,7 +50,19 @@ class WorkoutDetailScreen extends StatelessWidget {
           if (w.isCompleted)
             FilledButton(
               onPressed: () => prov.resetWorkout(w.id),
-              child: const Text('Restart Workout'),
+              style: FilledButton.styleFrom(
+                padding: EdgeInsets.symmetric(
+                  vertical: Responsive.getSpacing(context),
+                  horizontal: Responsive.getSpacing(context) * 1.5,
+                ),
+              ),
+              child: Text(
+                'Restart Workout',
+                style: TextStyle(
+                  fontSize: Responsive.getBodyFontSize(context),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
         ],
       ),
@@ -71,19 +83,49 @@ class _Header extends StatelessWidget {
         Row(children: [
           const CircleAvatar(backgroundColor: Colors.white24, child: Text('💪')),
           const SizedBox(width: 12),
-          Expanded(child: Text(w.name, style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Colors.white))),
+          Expanded(
+            child: Text(
+              w.name, 
+              style: TextStyle(
+                fontSize: Responsive.getTitleFontSize(context),
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+              ),
+            ),
+          ),
           const SizedBox(width: 8),
-          Chip(label: Text(w.category)),
+          Chip(
+            label: Text(
+              w.category,
+              style: TextStyle(
+                fontSize: Responsive.getBodyFontSize(context) * 0.8,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
           const SizedBox(width: 6),
           const Icon(Icons.edit, color: Colors.white70),
         ]),
         const SizedBox(height: 18),
-        const Text('Workout Progress', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+        Text(
+          'Workout Progress', 
+          style: TextStyle(
+            color: Colors.white, 
+            fontWeight: FontWeight.w700,
+            fontSize: Responsive.getSubtitleFontSize(context),
+          ),
+        ),
         const SizedBox(height: 8),
         LinearProgressIndicator(value: w.progress.clamp(0,1)),
         const SizedBox(height: 6),
-        Text('${w.progressPercent}% Complete',
-            style: const TextStyle(color: Colors.white70)),
+        Text(
+          '${w.progressPercent}% Complete',
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: Responsive.getBodyFontSize(context) * 0.9,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
         const SizedBox(height: 14),
         Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
           _mini('🏋️', '${w.completedSets}/${w.totalSets}', 'Sets Done'),
@@ -94,10 +136,28 @@ class _Header extends StatelessWidget {
     );
   }
 
-  Widget _mini(String emoji, String value, String label) => Column(children: [
-    Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 18)),
-    Text(label, style: const TextStyle(color: Colors.white70)),
-  ]);
+  Widget _mini(String emoji, String value, String label) {
+    return Builder(
+      builder: (context) => Column(children: [
+        Text(
+          value, 
+          style: TextStyle(
+            color: Colors.white, 
+            fontWeight: FontWeight.w800, 
+            fontSize: Responsive.getSubtitleFontSize(context),
+          ),
+        ),
+        Text(
+          label, 
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: Responsive.getBodyFontSize(context) * 0.8,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ]),
+    );
+  }
 }
 
 class _ExerciseTile extends StatefulWidget {
@@ -287,8 +347,10 @@ class _ExerciseTileState extends State<_ExerciseTile> {
                 Expanded(
                   child: Text(
                     ex.name,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    style: TextStyle(
+                      fontSize: Responsive.getBodyFontSize(context) * 0.9,
                       fontWeight: FontWeight.w600,
+                      color: const Color(0xFF0E1625),
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -317,8 +379,10 @@ class _ExerciseTileState extends State<_ExerciseTile> {
             // Sets and reps info
             Text(
               '${ex.sets} sets × ${ex.reps} reps', 
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              style: TextStyle(
+                fontSize: Responsive.getBodyFontSize(context) * 0.8,
                 color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
               ),
             ),
             
@@ -327,8 +391,10 @@ class _ExerciseTileState extends State<_ExerciseTile> {
             // Progress info
             Text(
               '${ex.completedSets}/${ex.sets}', 
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.w500,
+              style: TextStyle(
+                fontSize: Responsive.getBodyFontSize(context) * 0.8,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF0E1625),
               ),
             ),
             
@@ -351,19 +417,25 @@ class _ExerciseTileState extends State<_ExerciseTile> {
                 Expanded(
                   child: FilledButton.icon(
                     onPressed: () => _openTimer(context),
-                    icon: const Icon(Icons.timer, size: 16),
-                    label: const Text('Timer', style: TextStyle(fontSize: 12)),
+                    icon: Icon(Icons.timer, size: Responsive.getIconSize(context) * 0.7),
+                    label: Text(
+                      'Timer', 
+                      style: TextStyle(fontSize: Responsive.getBodyFontSize(context) * 0.75),
+                    ),
                     style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      padding: EdgeInsets.symmetric(
+                        vertical: Responsive.getSpacing(context) * 0.75,
+                        horizontal: Responsive.getSpacing(context) * 0.5,
+                      ),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: Responsive.getSpacing(context) * 0.5),
                 // Complete button
                 SizedBox(
-                  height: 40,
-                  width: 40,
+                  height: Responsive.getSpacing(context) * 2.5,
+                  width: Responsive.getSpacing(context) * 2.5,
                   child: FilledButton(
                     style: FilledButton.styleFrom(
                       backgroundColor: Colors.green,
@@ -371,7 +443,11 @@ class _ExerciseTileState extends State<_ExerciseTile> {
                       padding: EdgeInsets.zero,
                     ),
                     onPressed: () => prov.incrementSet(w.id, ex.id),
-                    child: const Icon(Icons.check, color: Colors.white, size: 18),
+                    child: Icon(
+                      Icons.check, 
+                      color: Colors.white, 
+                      size: Responsive.getIconSize(context) * 0.8,
+                    ),
                   ),
                 ),
               ],
