@@ -121,25 +121,26 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 1,
-        title: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: Responsive.getSpacing(context),
-            vertical: Responsive.getSpacing(context) * 0.5,
-          ),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                const Color(0xFF4E6CF8).withOpacity(0.1), // Blue accent
-                const Color(0xFF3ECF8E).withOpacity(0.05), // Green accent
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+        title: Flexible(
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: Responsive.getSpacing(context),
+              vertical: Responsive.getSpacing(context) * 0.5,
             ),
-            borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
-            border: Border.all(
-              color: const Color(0xFF4E6CF8).withOpacity(0.2),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF4E6CF8).withOpacity(0.1), // Blue accent
+                  const Color(0xFF3ECF8E).withOpacity(0.05), // Green accent
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
+              border: Border.all(
+                color: const Color(0xFF4E6CF8).withOpacity(0.2),
+              ),
             ),
-          ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -163,76 +164,160 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                 ),
               ),
               SizedBox(width: Responsive.getSpacing(context) * 0.5),
-              Text(
-                'Workouts',
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: Responsive.getTitleFontSize(context),
-                  color: const Color(0xFF0E1625), // Dark navy
+              Flexible(
+                child: Text(
+                  'Workouts',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: Responsive.getTitleFontSize(context),
+                    color: const Color(0xFF0E1625), // Dark navy
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
           ),
+          ),
         ),
         actions: [
-          Row(
-            children: [
-              // Import button
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF3ECF8E), // Green for import
-                  borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF3ECF8E).withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
+          // Responsive actions based on screen size
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final screenWidth = constraints.maxWidth;
+              final isTablet = screenWidth > 600;
+              
+              if (isTablet) {
+                // Tablet: Show both buttons with labels
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Import button
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3ECF8E), // Green for import
+                        borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF3ECF8E).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: FilledButton.icon(
+                        onPressed: () => Navigator.of(context).pushNamed(ImportWorkoutScreen.route),
+                        icon: Icon(Icons.web, size: Responsive.getIconSize(context) * 0.6),
+                        label: Text(
+                          'Import',
+                          style: TextStyle(fontSize: Responsive.getBodyFontSize(context) * 0.8),
+                        ),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: Colors.white,
+                          shadowColor: Colors.transparent,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: Responsive.getSpacing(context) * 0.75,
+                            vertical: Responsive.getSpacing(context) * 0.5,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: Responsive.getSpacing(context) * 0.75),
+                    // Create button
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4E6CF8), // Solid blue (no gradient)
+                        borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF4E6CF8).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: FilledButton.icon(
+                        onPressed: () => Navigator.of(context).pushNamed(CreateWorkoutScreen.route),
+                        icon: Icon(Icons.add, size: Responsive.getIconSize(context) * 0.6),
+                        label: Text(
+                          'Create',
+                          style: TextStyle(fontSize: Responsive.getBodyFontSize(context) * 0.8),
+                        ),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: Colors.white,
+                          shadowColor: Colors.transparent,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: Responsive.getSpacing(context) * 0.75,
+                            vertical: Responsive.getSpacing(context) * 0.5,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
-                ),
-                child: FilledButton.icon(
-                  onPressed: () => Navigator.of(context).pushNamed(ImportWorkoutScreen.route),
-                  icon: const Icon(Icons.web, size: 18),
-                  label: const Text('Import'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    foregroundColor: Colors.white,
-                    shadowColor: Colors.transparent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
+                );
+              } else {
+                // Phone: Show icon-only buttons to save space
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Import button (icon only)
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3ECF8E), // Green for import
+                        borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF3ECF8E).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: IconButton(
+                        onPressed: () => Navigator.of(context).pushNamed(ImportWorkoutScreen.route),
+                        icon: Icon(Icons.web, size: Responsive.getIconSize(context) * 0.7),
+                        tooltip: 'Import Workout',
+                        style: IconButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.all(Responsive.getSpacing(context) * 0.5),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Create button
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF4E6CF8), // Solid blue (no gradient)
-                  borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF4E6CF8).withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
+                    SizedBox(width: Responsive.getSpacing(context) * 0.5),
+                    // Create button (icon only)
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4E6CF8), // Solid blue (no gradient)
+                        borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF4E6CF8).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: IconButton(
+                        onPressed: () => Navigator.of(context).pushNamed(CreateWorkoutScreen.route),
+                        icon: Icon(Icons.add, size: Responsive.getIconSize(context) * 0.7),
+                        tooltip: 'Create Workout',
+                        style: IconButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.all(Responsive.getSpacing(context) * 0.5),
+                        ),
+                      ),
                     ),
                   ],
-                ),
-                child: FilledButton.icon(
-                  onPressed: () => Navigator.of(context).pushNamed(CreateWorkoutScreen.route),
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Create'),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    foregroundColor: Colors.white,
-                    shadowColor: Colors.transparent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+                );
+              }
+            },
           ),
         ],
       ),
