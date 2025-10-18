@@ -68,4 +68,30 @@ class WorkoutProvider extends ChangeNotifier {
     await _repo.upsert(w);
     await refresh();
   }
+
+  Future<void> importWorkouts(List<Workout> workouts) async {
+    final existingNames = _workouts.map((w) => w.name.toLowerCase()).toSet();
+    final toAdd = <Workout>[];
+
+    for (final w in workouts) {
+      final key = w.name.toLowerCase();
+      if (!existingNames.contains(key)) {
+        toAdd.add(w);
+        existingNames.add(key);
+      } else {
+        toAdd.add(Workout(
+          id: w.id,
+          name: '${w.name} (Imported)',
+          category: w.category,
+          description: w.description,
+          durationMinutes: w.durationMinutes,
+          difficulty: w.difficulty,
+          exercises: w.exercises,
+        ));
+      }
+    }
+
+    _workouts.addAll(toAdd);
+    notifyListeners();
+  }
 }
