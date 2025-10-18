@@ -5,6 +5,7 @@ import '../providers/workout_provider.dart';
 import '../models/workout.dart';
 import '../widgets/ff_widgets.dart';
 import '../services/ai_instructions_service.dart';
+import '../utils/responsive.dart';
 
 class WorkoutDetailScreen extends StatelessWidget {
   static const route = '/workout';
@@ -21,19 +22,31 @@ class WorkoutDetailScreen extends StatelessWidget {
         title: const Text('Workout Details'),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(Responsive.getSpacing(context)),
         children: [
           _Header(w: w),
-          const SizedBox(height: 16),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: w.exercises.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2, childAspectRatio: 0.9, crossAxisSpacing: 12, mainAxisSpacing: 12),
-            itemBuilder: (ctx, i) => _ExerciseTile(workoutId: w.id, index: i),
+          SizedBox(height: Responsive.getSpacing(context)),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              // Calculate responsive grid based on screen width
+              final screenWidth = constraints.maxWidth;
+              final crossAxisCount = screenWidth > 600 ? 3 : 2; // 3 columns on tablets, 2 on phones
+              
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: w.exercises.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  childAspectRatio: screenWidth > 600 ? 1.1 : 0.85, // Better aspect ratio for tablets
+                  crossAxisSpacing: Responsive.getSpacing(context) * 0.75,
+                  mainAxisSpacing: Responsive.getSpacing(context) * 0.75,
+                ),
+                itemBuilder: (ctx, i) => _ExerciseTile(workoutId: w.id, index: i),
+              );
+            },
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: Responsive.getSpacing(context) * 1.5),
           if (w.isCompleted)
             FilledButton(
               onPressed: () => prov.resetWorkout(w.id),
@@ -257,60 +270,108 @@ class _ExerciseTileState extends State<_ExerciseTile> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: EdgeInsets.all(Responsive.getSpacing(context) * 0.75),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min, // Prevent overflow
           children: [
-            Row(children: [
-              const CircleAvatar(backgroundColor: Color(0xFFE9EEFF), child: Icon(Icons.fitness_center, color: Colors.blue)),
-              const SizedBox(width: 8),
-              Expanded(child: Text(ex.name, style: Theme.of(context).textTheme.titleMedium)),
-              IconButton(
-                tooltip: 'Exercise guide',
-                onPressed: _loadingHowTo ? null : () => _showHowTo(context),
-                icon: Icon(
-                  ex.howTo != null && ex.howTo!.isNotEmpty 
-                    ? Icons.menu_book 
-                    : Icons.menu_book_outlined, 
-                  color: ex.howTo != null && ex.howTo!.isNotEmpty 
-                    ? Colors.blue 
-                    : const Color(0xFF707B90)
-                ),
-              ),
-            ]),
-            const SizedBox(height: 6),
-            Text('${ex.sets} sets × ${ex.reps} reps', style: Theme.of(context).textTheme.bodySmall),
-            const SizedBox(height: 8),
-            Text('${ex.completedSets}/${ex.sets}', style: Theme.of(context).textTheme.bodySmall),
-            const SizedBox(height: 4),
-            LinearProgressIndicator(value: ex.progress.clamp(0, 1), backgroundColor: Colors.grey.shade300, color: Colors.blue),
-            const SizedBox(height: 8),
-            const Spacer(),
+            // Header with icon and name
             Row(
               children: [
-                // ⏱️ Timer button (full width)
+                const CircleAvatar(
+                  radius: 16,
+                  backgroundColor: Color(0xFFE9EEFF), 
+                  child: Icon(Icons.fitness_center, color: Colors.blue, size: 16)
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    ex.name,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Exercise guide',
+                  onPressed: _loadingHowTo ? null : () => _showHowTo(context),
+                  icon: Icon(
+                    ex.howTo != null && ex.howTo!.isNotEmpty 
+                      ? Icons.menu_book 
+                      : Icons.menu_book_outlined, 
+                    color: ex.howTo != null && ex.howTo!.isNotEmpty 
+                      ? Colors.blue 
+                      : const Color(0xFF707B90),
+                    size: 18,
+                  ),
+                  padding: const EdgeInsets.all(4),
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                ),
+              ],
+            ),
+            
+            SizedBox(height: Responsive.getSpacing(context) * 0.5),
+            
+            // Sets and reps info
+            Text(
+              '${ex.sets} sets × ${ex.reps} reps', 
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Colors.grey.shade600,
+              ),
+            ),
+            
+            SizedBox(height: Responsive.getSpacing(context) * 0.375),
+            
+            // Progress info
+            Text(
+              '${ex.completedSets}/${ex.sets}', 
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            
+            SizedBox(height: Responsive.getSpacing(context) * 0.375),
+            
+            // Progress bar
+            LinearProgressIndicator(
+              value: ex.progress.clamp(0, 1), 
+              backgroundColor: Colors.grey.shade300, 
+              color: Colors.blue,
+              minHeight: 4,
+            ),
+            
+            SizedBox(height: Responsive.getSpacing(context) * 0.75),
+            
+            // Action buttons
+            Row(
+              children: [
+                // Timer button
                 Expanded(
                   child: FilledButton.icon(
                     onPressed: () => _openTimer(context),
-                    icon: const Icon(Icons.timer),
-                    label: const Text(''),
+                    icon: const Icon(Icons.timer, size: 16),
+                    label: const Text('Timer', style: TextStyle(fontSize: 12)),
                     style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
-                // ✅ Green tick
+                const SizedBox(width: 8),
+                // Complete button
                 SizedBox(
-                  height: 52, width: 60,
+                  height: 40,
+                  width: 40,
                   child: FilledButton(
                     style: FilledButton.styleFrom(
                       backgroundColor: Colors.green,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      padding: EdgeInsets.zero,
                     ),
                     onPressed: () => prov.incrementSet(w.id, ex.id),
-                    child: const Icon(Icons.check, color: Colors.white),
+                    child: const Icon(Icons.check, color: Colors.white, size: 18),
                   ),
                 ),
               ],
