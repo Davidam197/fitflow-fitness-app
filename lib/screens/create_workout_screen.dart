@@ -5,6 +5,7 @@ import '../models/workout.dart';
 import '../providers/workout_provider.dart';
 import '../providers/membership_provider.dart';
 import 'add_exercise_screen.dart';
+import 'import_workout_screen.dart';
 
 class CreateWorkoutScreen extends StatefulWidget {
   static const route = '/create';
@@ -35,6 +36,16 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
       appBar: AppBar(
         title: const Text('Create Workout'),
         actions: [
+          IconButton(
+            onPressed: () async {
+              final result = await Navigator.pushNamed(context, ImportWorkoutScreen.route);
+              if (result == true && mounted) {
+                Navigator.pop(context, true); // Return to workouts screen
+              }
+            },
+            icon: const Icon(Icons.web),
+            tooltip: 'Import from Web',
+          ),
           TextButton(
             onPressed: () async {
               if (!_form.currentState!.validate()) return;

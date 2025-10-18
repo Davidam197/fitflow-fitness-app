@@ -6,6 +6,7 @@ import '../providers/workout_provider.dart';
 import '../providers/membership_provider.dart';
 import '../screens/create_workout_screen.dart';
 import '../screens/workout_detail_screen.dart';
+import '../screens/import_workout_screen.dart';
 import '../utils/responsive.dart';
 
 class WorkoutsScreen extends StatefulWidget {
@@ -174,32 +175,64 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
           ),
         ),
         actions: [
-          Container(
-            margin: EdgeInsets.only(right: Responsive.getSpacing(context)),
-            decoration: BoxDecoration(
-              color: const Color(0xFF4E6CF8), // Solid blue (no gradient)
-              borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF4E6CF8).withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: FilledButton.icon(
-              onPressed: () => Navigator.of(context).pushNamed(CreateWorkoutScreen.route),
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('Create'),
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                foregroundColor: Colors.white,
-                shadowColor: Colors.transparent,
-                shape: RoundedRectangleBorder(
+          Row(
+            children: [
+              // Import button
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF3ECF8E), // Green for import
                   borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF3ECF8E).withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: FilledButton.icon(
+                  onPressed: () => Navigator.of(context).pushNamed(ImportWorkoutScreen.route),
+                  icon: const Icon(Icons.web, size: 18),
+                  label: const Text('Import'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    foregroundColor: Colors.white,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
+                    ),
+                  ),
                 ),
               ),
-            ),
+              const SizedBox(width: 12),
+              // Create button
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4E6CF8), // Solid blue (no gradient)
+                  borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF4E6CF8).withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: FilledButton.icon(
+                  onPressed: () => Navigator.of(context).pushNamed(CreateWorkoutScreen.route),
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('Create'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    foregroundColor: Colors.white,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
