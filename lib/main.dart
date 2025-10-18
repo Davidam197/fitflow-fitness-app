@@ -5,6 +5,7 @@ import 'models/exercise.dart';
 import 'models/workout.dart';
 import 'data/workout_repo.dart';
 import 'providers/workout_provider.dart';
+import 'providers/membership_provider.dart';
 import 'screens/main_navigation_screen.dart';
 import 'screens/workout_detail_screen.dart';
 import 'screens/create_workout_screen.dart';
@@ -24,8 +25,11 @@ void main() async {
   await workoutProvider.init();
 
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => workoutProvider,
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => workoutProvider),
+        ChangeNotifierProvider(create: (_) => MembershipProvider()),
+      ],
       child: const FitFlowApp(),
     ),
   );

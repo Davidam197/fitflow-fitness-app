@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../utils/responsive.dart';
+import '../providers/membership_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   static const route = '/settings';
@@ -56,9 +58,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _snack(context, 'Edit profile tapped');
               },
             ),
-              const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-              _sectionTitle(context, 'App Preferences'),
+            _sectionTitle(context, 'Membership'),
+            _MembershipCard(),
+
+            const SizedBox(height: 24),
+
+            _sectionTitle(context, 'App Preferences'),
             _Tile(
               icon: Icons.dark_mode_outlined,
               title: 'Theme',
@@ -562,4 +569,359 @@ Widget _sectionTitle(BuildContext context, String title) {
       ],
     ),
   );
+}
+
+class _MembershipCard extends StatelessWidget {
+  const _MembershipCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<MembershipProvider>(
+      builder: (context, membershipProvider, child) {
+        final membership = membershipProvider.membership;
+        final isPremium = membershipProvider.isPremium;
+        final isExpired = membershipProvider.isExpired;
+
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isPremium 
+                ? [
+                    const Color(0xFF7A5CFF), // Purple
+                    const Color(0xFF3E6CF6), // Blue
+                  ]
+                : [
+                    const Color(0xFF6B7280), // Gray
+                    const Color(0xFF9CA3AF), // Light Gray
+                  ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: (isPremium ? const Color(0xFF7A5CFF) : const Color(0xFF6B7280)).withOpacity(0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: () => _showMembershipOptions(context),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.white.withOpacity(0.3)),
+                      ),
+                      child: Icon(
+                        isPremium ? Icons.diamond : Icons.person,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            membership.displayName,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 20,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            isExpired 
+                              ? 'Membership expired'
+                              : membership.description,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          if (isPremium && membership.expiryDate != null) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              'Expires ${_formatDate(membership.expiryDate!)}',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.8),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white.withOpacity(0.3)),
+                      ),
+                      child: Icon(
+                        isPremium ? Icons.diamond : Icons.upgrade,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showMembershipOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _MembershipOptionsSheet(),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = date.difference(now).inDays;
+    
+    if (difference < 0) return 'Expired';
+    if (difference == 0) return 'Today';
+    if (difference == 1) return 'Tomorrow';
+    if (difference < 7) return 'In $difference days';
+    if (difference < 30) return 'In ${(difference / 7).round()} weeks';
+    return 'In ${(difference / 30).round()} months';
+  }
+}
+
+class _MembershipOptionsSheet extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Membership Options',
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Consumer<MembershipProvider>(
+              builder: (context, membershipProvider, child) {
+                final isPremium = membershipProvider.isPremium;
+                
+                return Column(
+                  children: [
+                    _MembershipOptionCard(
+                      title: 'Basic',
+                      price: 'Free',
+                      features: [
+                        'Up to 5 workouts',
+                        'Basic analytics',
+                        'Standard support',
+                      ],
+                      isSelected: !isPremium,
+                      onTap: () {
+                        membershipProvider.downgradeToBasic();
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Switched to Basic plan')),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    _MembershipOptionCard(
+                      title: 'Premium',
+                      price: '\$9.99/month',
+                      features: [
+                        'Unlimited workouts',
+                        'Advanced analytics',
+                        'Premium workout plans',
+                        'Priority support',
+                        'Data export',
+                      ],
+                      isSelected: isPremium,
+                      isPremium: true,
+                      onTap: () {
+                        // Simulate premium upgrade
+                        membershipProvider.upgradeToPremium(
+                          transactionId: 'premium_${DateTime.now().millisecondsSinceEpoch}',
+                          expiryDate: DateTime.now().add(const Duration(days: 30)),
+                        );
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Upgraded to Premium! 🎉')),
+                        );
+                      },
+                    ),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MembershipOptionCard extends StatelessWidget {
+  final String title;
+  final String price;
+  final List<String> features;
+  final bool isSelected;
+  final bool isPremium;
+  final VoidCallback onTap;
+
+  const _MembershipOptionCard({
+    required this.title,
+    required this.price,
+    required this.features,
+    required this.isSelected,
+    this.isPremium = false,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: isSelected 
+            ? (isPremium ? const Color(0xFF7A5CFF) : const Color(0xFF3E6CF6))
+            : Colors.grey.shade300,
+          width: isSelected ? 2 : 1,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        gradient: isSelected && isPremium
+          ? LinearGradient(
+              colors: [
+                const Color(0xFF7A5CFF).withOpacity(0.1),
+                const Color(0xFF3E6CF6).withOpacity(0.05),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            )
+          : null,
+        color: isSelected && !isPremium ? const Color(0xFF3E6CF6).withOpacity(0.05) : null,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    if (isPremium)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF7A5CFF), Color(0xFF3E6CF6)],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text(
+                          'POPULAR',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    if (isPremium) const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: isSelected 
+                            ? (isPremium ? const Color(0xFF7A5CFF) : const Color(0xFF3E6CF6))
+                            : null,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      price,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: isSelected 
+                          ? (isPremium ? const Color(0xFF7A5CFF) : const Color(0xFF3E6CF6))
+                          : null,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                ...features.map((feature) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.check_circle,
+                        color: isSelected 
+                          ? (isPremium ? const Color(0xFF7A5CFF) : const Color(0xFF3E6CF6))
+                          : Colors.grey.shade400,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          feature,
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
