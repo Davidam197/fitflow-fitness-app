@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/workout_provider.dart';
 import '../services/web_scraping_service.dart';
 import '../models/workout.dart';
+import '../models/exercise.dart';
 
 class ImportWorkoutScreen extends StatefulWidget {
   static const route = '/import-workout';
@@ -21,6 +22,8 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
   );
   bool _importing = false;
   List<Workout> _importedWorkouts = [];
+  String _importGroupName = '';
+  int _importGroupCounter = 1;
 
   @override
   void dispose() {
@@ -42,12 +45,17 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
       final workouts = await WebScrapingService.scrapeWorkouts(url);
       if (!mounted) return;
       
+      // Generate group name
+      final groupName = 'Imported Workout $_importGroupCounter';
+      _importGroupCounter++;
+      
       setState(() {
         _importedWorkouts = workouts;
+        _importGroupName = groupName;
       });
       
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Found ${workouts.length} workout(s) - organize them below')),
+        SnackBar(content: Text('Found ${workouts.length} workout(s) - ready to save as "$groupName"')),
       );
     } catch (e) {
       if (!mounted) return;
@@ -164,6 +172,58 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
     }
   }
 
+  Future<void> _saveAllAsGroup() async {
+    if (_importedWorkouts.isEmpty) return;
+
+    final prov = context.read<WorkoutProvider>();
+    
+    // Create a single workout that contains all the imported workouts as exercises
+    final allExercises = <Exercise>[];
+    
+    for (final workout in _importedWorkouts) {
+      // Add a separator exercise to indicate the start of a new workout
+      allExercises.add(Exercise(
+        id: DateTime.now().microsecondsSinceEpoch.toString(),
+        name: '--- ${workout.name} ---',
+        sets: 1,
+        reps: 1,
+        durationSeconds: 0,
+        equipment: '',
+        notes: '${workout.exercises.length} exercises • ${workout.durationMinutes} min',
+        description: '',
+      ));
+      
+      // Add all exercises from this workout
+      allExercises.addAll(workout.exercises);
+    }
+
+    final groupedWorkout = Workout(
+      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      name: _importGroupName,
+      category: 'Imported',
+      description: 'Imported workout group with ${_importedWorkouts.length} workout(s)',
+      durationMinutes: _importedWorkouts.fold(0, (sum, w) => sum + w.durationMinutes),
+      difficulty: 'Intermediate',
+      exercises: allExercises,
+    );
+
+    await prov.importWorkouts([groupedWorkout]);
+    
+    final workoutCount = _importedWorkouts.length;
+    final groupName = _importGroupName;
+    
+    setState(() {
+      _importedWorkouts.clear();
+      _importGroupName = '';
+    });
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Saved "$groupName" with $workoutCount workout(s)!')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final workouts = context.watch<WorkoutProvider>().workouts;
@@ -207,8 +267,68 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
 
           // Imported workouts section (for organization)
           if (_importedWorkouts.isNotEmpty) ...[
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.group_work,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Import Group: $_importGroupName',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${_importedWorkouts.length} workout(s) will be saved as one group',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: _saveAllAsGroup,
+                          icon: const Icon(Icons.save),
+                          label: const Text('Save as Group'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            _importedWorkouts.clear();
+                            _importGroupName = '';
+                          });
+                        },
+                        icon: const Icon(Icons.clear),
+                        label: const Text('Clear'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
             Text(
-              'Organize Imported Workouts',
+              'Individual Workouts',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
