@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
+import 'dart:convert';
 import '../providers/workout_provider.dart';
 import '../models/workout.dart';
 import '../models/exercise.dart';
@@ -507,10 +508,33 @@ class _ExerciseTileState extends State<_ExerciseTile> {
   }
 
   List<Exercise> _getSubWorkoutExercises(Exercise subWorkout) {
-    // For now, return empty list - in a real implementation, 
-    // you'd store the actual exercises for each sub-workout
-    // This would require modifying the data structure to store sub-workout exercises
-    return [];
+    // Get the actual exercises from the workout provider
+    final prov = context.read<WorkoutProvider>();
+    final workout = prov.byId(widget.workoutId);
+    
+    // Find the matching sub-workout and return its exercises
+    // For imported workouts, the exercises are stored in the description field as JSON
+    if (subWorkout.description.isNotEmpty) {
+      try {
+        final exercisesData = json.decode(subWorkout.description);
+        return exercisesData.map<Exercise>((data) => Exercise(
+          id: data['id'] ?? DateTime.now().microsecondsSinceEpoch.toString(),
+          name: data['name'] ?? 'Exercise',
+          sets: data['sets'] ?? 3,
+          reps: data['reps'] ?? 10,
+          durationSeconds: data['durationSeconds'] ?? 60,
+          equipment: data['equipment'] ?? '',
+          notes: data['notes'] ?? '',
+          description: data['description'] ?? '',
+        )).toList();
+      } catch (e) {
+        // If JSON parsing fails, return empty list
+        return [];
+      }
+    }
+    
+    // Fallback: return the exercises from the main workout
+    return workout.exercises;
   }
 }
 

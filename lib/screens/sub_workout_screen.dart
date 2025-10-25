@@ -176,10 +176,11 @@ class SubWorkoutScreen extends StatelessWidget {
 
   void _markExerciseComplete(BuildContext context, WorkoutProvider prov, String workoutId, int exerciseIndex) {
     // Mark exercise as complete
-    prov.incrementSet(workoutId, prov.byId(workoutId).exercises[exerciseIndex].id);
+    final exercise = exercises[exerciseIndex];
+    prov.incrementSet(workoutId, exercise.id);
     
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Exercise completed!')),
+      SnackBar(content: Text('${exercise.name} completed!')),
     );
   }
 

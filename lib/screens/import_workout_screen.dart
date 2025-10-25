@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../providers/workout_provider.dart';
 import '../services/web_scraping_service.dart';
 import '../models/workout.dart';
-import '../models/exercise.dart';
 
 class ImportWorkoutScreen extends StatefulWidget {
   static const route = '/import-workout';
@@ -191,7 +190,6 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
     await prov.importWorkouts(_importedWorkouts);
     
     final workoutCount = _importedWorkouts.length;
-    final groupName = _importGroupName;
     
     setState(() {
       _importedWorkouts.clear();
