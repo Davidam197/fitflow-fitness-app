@@ -177,31 +177,49 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
 
     final prov = context.read<WorkoutProvider>();
     
-    // Create a single workout that contains all the imported workouts as exercises
-    final allExercises = <Exercise>[];
+    // Group workouts by body part/muscle group
+    final Map<String, List<Workout>> groupedWorkouts = {};
     
     for (final workout in _importedWorkouts) {
-      // Add a separator exercise to indicate the start of a new workout
+      // Extract body part from workout name or description
+      String bodyPart = 'General';
+      final workoutText = '${workout.name} ${workout.description}'.toLowerCase();
+      
+      if (workoutText.contains('back')) bodyPart = 'Back';
+      else if (workoutText.contains('chest')) bodyPart = 'Chest';
+      else if (workoutText.contains('leg')) bodyPart = 'Legs';
+      else if (workoutText.contains('arm')) bodyPart = 'Arms';
+      else if (workoutText.contains('shoulder')) bodyPart = 'Shoulders';
+      else if (workoutText.contains('core') || workoutText.contains('abs')) bodyPart = 'Core';
+      
+      groupedWorkouts.putIfAbsent(bodyPart, () => []).add(workout);
+    }
+    
+    // Create a main workout with sub-workouts as "exercises"
+    final allExercises = <Exercise>[];
+    
+    for (final entry in groupedWorkouts.entries) {
+      final bodyPart = entry.key;
+      final workouts = entry.value;
+      
+      // Create a "sub-workout" exercise for each body part
       allExercises.add(Exercise(
         id: DateTime.now().microsecondsSinceEpoch.toString(),
-        name: '--- ${workout.name} ---',
+        name: '$bodyPart Workout',
         sets: 1,
-        reps: 1,
-        durationSeconds: 0,
+        reps: workouts.length,
+        durationSeconds: workouts.fold(0, (sum, w) => sum + w.durationMinutes) * 60,
         equipment: '',
-        notes: '${workout.exercises.length} exercises • ${workout.durationMinutes} min',
-        description: '',
+        notes: '${workouts.fold(0, (sum, w) => sum + w.exercises.length)} exercises',
+        description: 'Click to start $bodyPart workout',
       ));
-      
-      // Add all exercises from this workout
-      allExercises.addAll(workout.exercises);
     }
 
     final groupedWorkout = Workout(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
       name: _importGroupName,
       category: 'Imported',
-      description: 'Imported workout group with ${_importedWorkouts.length} workout(s)',
+      description: 'Imported workout group with ${groupedWorkouts.length} body part(s)',
       durationMinutes: _importedWorkouts.fold(0, (sum, w) => sum + w.durationMinutes),
       difficulty: 'Intermediate',
       exercises: allExercises,
@@ -219,7 +237,7 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Saved "$groupName" with $workoutCount workout(s)!')),
+        SnackBar(content: Text('Saved "$groupName" with $workoutCount workout(s) grouped by body part!')),
       );
     }
   }

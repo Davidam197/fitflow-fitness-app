@@ -11,7 +11,7 @@ import '../providers/workout_provider.dart';
 /// Fallback: If the URL looks like the Thor article and scraping fails, use a precise Thor preset.
 /// Usage: await WebScrapingService.importAndSave(provider: context.read<WorkoutProvider>(), url: url);
 class WebScrapingService {
-  // --- Header detection patterns (extend as you need) ---
+  // --- Enhanced header detection patterns ---
   static final List<RegExp> _dayPatterns = [
     RegExp(r'\bday\s*\d+\b', caseSensitive: false),
     RegExp(r'\bworkout\s*\d+\b', caseSensitive: false),
@@ -19,9 +19,16 @@ class WebScrapingService {
     RegExp(r'\bweek\s*\d+\b', caseSensitive: false),
     RegExp(r'\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b',
         caseSensitive: false),
-    RegExp(r'\b(chest|back|legs|arms|shoulders|push|pull|upper|lower|full\s*body)\b',
-        caseSensitive: false),
   ];
+
+  // --- Body part/muscle group patterns ---
+  static final List<RegExp> _bodyPartPatterns = [
+    RegExp(r'\b(chest|back|legs?|arms?|shoulders?|biceps?|triceps?|delts?|quads?|hamstrings?|glutes?|calves?|core|abs?)\b',
+        caseSensitive: false),
+    RegExp(r'\b(push|pull|upper|lower|full\s*body)\b', caseSensitive: false),
+    RegExp(r'\b(chest\s*day|back\s*day|leg\s*day|arm\s*day|shoulder\s*day)\b', caseSensitive: false),
+  ];
+
 
   // --- Sets/Reps detection ---
   // e.g., "4 x 12", "4x12", "4 × 12", "4 sets x 12 reps", "4 sets of 12"
@@ -136,7 +143,7 @@ class WebScrapingService {
     }
   }
 
-  // Group by headers; collect exercises until the next header
+  // Enhanced extraction with better workout grouping
   static List<Workout> _extractWorkouts(dom.Document doc) {
     final out = <Workout>[];
     final body = doc.body;
@@ -147,6 +154,7 @@ class WebScrapingService {
     Workout? current;
     int currentHeaderLevel = 7;
     Set<String> seenExerciseTitles = {};
+    String currentGroup = 'General';
 
     void startWorkout(String header, int level) {
       if (current != null && current!.exercises.isNotEmpty) {
@@ -154,11 +162,15 @@ class WebScrapingService {
       }
       currentHeaderLevel = level;
       seenExerciseTitles = {};
+      
+      // Extract workout group from header
+      currentGroup = _extractWorkoutGroup(header);
+      
       current = Workout(
         id: DateTime.now().microsecondsSinceEpoch.toString(),
         name: _clean(header),
         category: _guessCategory(header),
-        description: 'Imported from web',
+        description: 'Imported from web - $currentGroup',
         durationMinutes: 45,
         difficulty: 'Intermediate',
         exercises: [],
@@ -214,8 +226,21 @@ class WebScrapingService {
 
   static bool _looksLikeWorkoutHeader(String text) {
     if (text.length > 120) return false;
-    return _dayPatterns.any((p) => p.hasMatch(text));
+    return _dayPatterns.any((p) => p.hasMatch(text)) || 
+           _bodyPartPatterns.any((p) => p.hasMatch(text));
   }
+
+  static String _extractWorkoutGroup(String text) {
+    // Try to extract body part/muscle group from the text
+    for (final pattern in _bodyPartPatterns) {
+      final match = pattern.firstMatch(text);
+      if (match != null) {
+        return match.group(0)!.toLowerCase().trim();
+      }
+    }
+    return 'General';
+  }
+
 
   static int _headerLevel(dom.Element e) {
     final n = e.localName?.toLowerCase() ?? '';
