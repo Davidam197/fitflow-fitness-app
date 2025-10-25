@@ -79,29 +79,6 @@ class WebScrapingService {
   // ---------------- internal: orchestrate generic scrape + fallback ----------------
 
   static Future<List<Workout>> _importFromUrl(String url) async {
-    try {
-      final items = await _scrapeGeneric(url);
-      if (items.isNotEmpty) return _stampSource(url, items);
-    } catch (_) {
-      // If generic scrape fails, we might still use fallback for known URL(s).
-    }
-
-    // Fallback for Thor page if the URL matches those patterns.
-    final u = Uri.tryParse(url);
-    final host = u?.host.toLowerCase() ?? '';
-    final path = u?.path.toLowerCase() ?? '';
-    final looksLikeThor = host.contains('muscleandfitness.com') &&
-        (path.contains('chris-hemsworth') || path.contains('thor'));
-
-    if (looksLikeThor) {
-      final preset = _thorPreset();
-      return _stampSource(url, preset);
-    }
-
-    throw Exception('Could not parse workouts from this URL.');
-  }
-
-  static Future<List<Workout>> _scrapeGeneric(String url) async {
     if (!_isValidUrl(url)) {
       throw Exception('Invalid URL');
     }
@@ -117,8 +94,49 @@ class WebScrapingService {
 
     final doc = html_parser.parse(res.body);
     _removeUnwanted(doc);
-    return _extractWorkouts(doc);
+
+    final thorStyle = _scrapeThorStyle(doc, sourceUrl: url);
+
+    // If we saw any valid section headers, trust only thorStyle.
+    final _validSectionSet = {
+      'back','chest','legs','shoulders','arms','bonus','abs','abs circuit'
+    };
+    final sawSectionHeaders = doc.body?.querySelectorAll('h1,h2,h3')
+        .any((h) => _validSectionSet.contains(_clean(h.text).toLowerCase())) ?? false;
+
+    if (sawSectionHeaders) {
+      if (thorStyle.isNotEmpty) return thorStyle;
+
+      // If headers exist but we parsed nothing, fail fast (or use Thor preset if recognized)
+      final u = Uri.tryParse(url);
+      final host = u?.host.toLowerCase() ?? '';
+      final path = u?.path.toLowerCase() ?? '';
+      final looksLikeThor = host.contains('muscleandfitness.com') &&
+          (path.contains('chris-hemsworth') || path.contains('thor'));
+      if (looksLikeThor) return _stampSource(url, _thorPreset());
+
+      throw Exception('Found section headers but could not parse exercises under them.');
+    }
+
+    // No section headers at all → try the generic parser.
+    try {
+      final generic = _extractWorkouts(doc);
+      if (generic.isNotEmpty) return _stampSource(url, generic);
+    } catch (_) {
+      // If generic scrape fails, we might still use fallback for known URL(s).
+    }
+
+    // Last resort: Thor preset for that URL
+    final u = Uri.tryParse(url);
+    final host = u?.host.toLowerCase() ?? '';
+    final path = u?.path.toLowerCase() ?? '';
+    final looksLikeThor = host.contains('muscleandfitness.com') &&
+        (path.contains('chris-hemsworth') || path.contains('thor'));
+    if (looksLikeThor) return _stampSource(url, _thorPreset());
+
+    throw Exception('Could not parse workouts from this URL.');
   }
+
 
   static bool _isValidUrl(String url) {
     try {
@@ -141,6 +159,236 @@ class WebScrapingService {
         el.remove();
       }
     }
+  }
+
+  // ---------------- Thor-style, section-aware DOM scraper ----------------
+
+  static List<Workout> _scrapeThorStyle(dom.Document doc, {required String sourceUrl}) {
+    final body = doc.body;
+    if (body == null) return [];
+
+    // Only consider real headings and only exact section names.
+    final _validSectionSet = {
+      'back','chest','legs','shoulders','arms','bonus','abs','abs circuit'
+    };
+
+    final headers = body
+        .querySelectorAll('h1,h2,h3') // strict: headings only
+        .where((e) {
+          final t = _clean(e.text);
+          final lower = t.toLowerCase();
+          
+          // If a heading lives inside a row/card that already looks like an exercise, skip it.
+          dom.Element? walk = e.parent;
+          var nestedInsideRow = false;
+          while (walk != null) {
+            if (_looksLikeExerciseRow(walk)) { nestedInsideRow = true; break; }
+            walk = walk.parent;
+          }
+          if (nestedInsideRow) return false;
+          
+          // must be short and exactly a known section
+          return t.isNotEmpty &&
+                 t.split(' ').length <= 3 &&
+                 _validSectionSet.contains(lower);
+        })
+        .toList();
+
+    if (headers.isEmpty) return [];
+
+    // Create a set for O(1) "is this a header?" checks when walking siblings.
+    final headerSet = headers.toSet();
+
+    final workouts = <Workout>[];
+
+    // 2) For each header, walk its subsequent siblings until we hit the next header.
+    for (int i = 0; i < headers.length; i++) {
+      final header = headers[i];
+      final sectionName = _normalizeSectionName(_clean(header.text));
+
+      final rows = <dom.Element>[];
+      dom.Element? cursor = header.nextElementSibling;
+
+      while (cursor != null && !headerSet.contains(cursor)) {
+        if (_looksLikeExerciseRow(cursor)) rows.add(cursor);
+
+        // also scan nested row-like blocks under this sibling
+        for (final r in cursor.querySelectorAll(
+          '[class*="row"], [class*="item"], [class*="exercise"], li, article, div')) {
+          if (_looksLikeExerciseRow(r)) rows.add(r);
+        }
+
+        cursor = cursor.nextElementSibling;
+      }
+
+      // Deduplicate by identity (no sourceSpan assumptions)
+      final seen = <dom.Element>{};
+      final rowList = <dom.Element>[];
+      for (final r in rows) {
+        if (!seen.contains(r)) {
+          seen.add(r);
+          rowList.add(r);
+        }
+      }
+
+      // Parse rows → Exercises
+      final exercises = <Exercise>[];
+      for (final row in rowList) {
+        final ex = _parseStructuredRow(row);
+        if (ex != null) exercises.add(ex);
+      }
+
+      if (exercises.isNotEmpty) {
+        workouts.add(
+          Workout(
+            id: DateTime.now().microsecondsSinceEpoch.toString(),
+            name: 'Imported Workout — $sectionName',
+            category: _guessCategory(sectionName),
+            description: 'Imported from web (section: $sectionName) (Source: $sourceUrl)',
+            durationMinutes: 55,
+            difficulty: 'Intermediate',
+            exercises: exercises,
+          ),
+        );
+      }
+    }
+
+    return workouts;
+  }
+
+  static String _normalizeSectionName(String raw) {
+    final t = raw.trim();
+    final lower = t.toLowerCase();
+    if (lower == 'abs' || lower == 'bonus' || lower.contains('abs circuit')) return 'Abs Circuit';
+    // Title case basic:
+    return t.isEmpty ? 'Section' : t[0].toUpperCase() + t.substring(1);
+  }
+
+  static bool _looksLikeExerciseRow(dom.Element e) {
+    final txt = _clean(e.text);
+    if (txt.isEmpty) return false;
+
+    // Must include at least two of the column cues to qualify
+    int cues = 0;
+    if (RegExp(r'\b(equipment)\b', caseSensitive: false).hasMatch(txt)) cues++;
+    if (RegExp(r'\b(sets)\b', caseSensitive: false).hasMatch(txt)) cues++;
+    if (RegExp(r'\b(reps)\b', caseSensitive: false).hasMatch(txt)) cues++;
+    if (RegExp(r'\b(rest)\b', caseSensitive: false).hasMatch(txt)) cues++;
+
+    final repsSeries = RegExp(r'\b\d{1,3}(?:\s*,\s*\d{1,3})+\b').hasMatch(txt) ||
+        RegExp(r'\bFAILURE\b', caseSensitive: false).hasMatch(txt) ||
+        RegExp(r'\b\d{1,3}\s*SEC\b', caseSensitive: false).hasMatch(txt);
+
+    // "row/card/list-item" hints
+    final classHint = e.classes.any((c) =>
+        c.contains('row') || c.contains('card') || c.contains('list') || c.contains('item'));
+
+    return (cues >= 2 || repsSeries) && classHint;
+  }
+
+  /// Parse a row that visually contains the columns: EXERCISE | EQUIPMENT | SETS | REPS | REST (+ note).
+  static Exercise? _parseStructuredRow(dom.Element row) {
+    final fullText = _clean(row.text); // safe even if row.text is null -> empty string
+    if (fullText.isEmpty) return null;
+
+    final noteNode = row.querySelector('p, .note, .tip, [class*="note"], [class*="tip"]');
+    final note = (noteNode != null) ? _clean(noteNode.text) : null;
+
+    final name = _pickBestText(row, ['[class*="exercise-name"]','[class*="title"]','[class*="name"]','h4,h5,strong,b','a'])
+        ?? _guessName(row);
+    if (name == null || name.isEmpty) return null;
+
+    final equipment = _pickLabeledValue(row, 'equipment') ?? _guessAfterLabel(fullText, 'equipment') ?? '';
+    final setsStr   = _pickLabeledValue(row, 'sets')      ?? _guessAfterLabel(fullText, 'sets')      ?? '--';
+    final repsStr   = _pickLabeledValue(row, 'reps')      ?? _guessAfterLabel(fullText, 'reps')      ?? _extractRepsSeries(fullText) ?? '--';
+    final restStr   = _pickLabeledValue(row, 'rest')      ?? _guessAfterLabel(fullText, 'rest')      ?? '--';
+
+    final sets = int.tryParse(setsStr.replaceAll(RegExp(r'[^0-9]'), ''));
+    final reps = int.tryParse(repsStr.replaceAll(RegExp(r'[^0-9]'), ''));
+
+    final compositeNote = [
+      if (note != null && note.isNotEmpty) note,
+      'Equipment: ${equipment.isEmpty ? "--" : equipment}',
+      'Sets: $setsStr',
+      'Reps: $repsStr',
+      'Rest: $restStr',
+    ].where((s) => s.trim().isNotEmpty).join(' • ');
+
+    return Exercise(
+      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      name: name,
+      sets: sets ?? 3,
+      reps: reps ?? 10,
+      durationSeconds: 60,
+      equipment: equipment,
+      notes: compositeNote,
+      description: '',
+    );
+  }
+
+  static String? _pickBestText(dom.Element scope, List<String> selectors) {
+    for (final sel in selectors) {
+      final el = scope.querySelector(sel);
+      if (el != null) {
+        final t = _clean(el.text);
+        if (t.isNotEmpty) return t;
+      }
+    }
+    return null;
+  }
+
+  static String? _pickLabeledValue(dom.Element scope, String label) {
+    // Find element that literally says "EQUIPMENT" etc., then read the sibling's text.
+    final all = scope.querySelectorAll('*');
+    for (final e in all) {
+      final t = _clean(e.text);
+      if (t.toLowerCase() == label.toLowerCase()) {
+        final next = e.nextElementSibling;
+        if (next != null) {
+          final v = _clean(next.text);
+          if (v.isNotEmpty && v.toLowerCase() != label.toLowerCase()) return v;
+        }
+        final parentSib = e.parent?.nextElementSibling;
+        if (parentSib != null) {
+          final v = _clean(parentSib.text);
+          if (v.isNotEmpty && v.toLowerCase() != label.toLowerCase()) return v;
+        }
+      }
+    }
+    return null;
+  }
+
+  static String? _guessName(dom.Element row) {
+    // Take the first bold/strong/left-most block line
+    final t = _clean(row.text);
+    if (t.isEmpty) return null;
+    final parts = t.split(RegExp(r'(Equipment|Sets|Reps|Rest)', caseSensitive: false));
+    if (parts.isNotEmpty) {
+      final first = _clean(parts.first);
+      if (first.isNotEmpty) return first.split('\n').first.trim();
+    }
+    return null;
+  }
+
+  static String? _guessAfterLabel(String text, String label) {
+    final re = RegExp('${RegExp.escape(label)}\\s*:?\\s*(.+?)\\s{2,}|${RegExp.escape(label)}\\s*:?\\s*(.+)\$',
+        caseSensitive: false, dotAll: true);
+    final m = re.firstMatch(text);
+    if (m != null) {
+      final grp = (m.group(1) ?? m.group(2) ?? '').trim();
+      final clip = grp.split(RegExp(r'\b(sets|reps|rest|equipment)\b', caseSensitive: false)).first.trim();
+      if (clip.isNotEmpty) return _clean(clip);
+    }
+    return null;
+  }
+
+  static String? _extractRepsSeries(String text) {
+    final series = RegExp(r'\b\d{1,3}(?:\s*,\s*\d{1,3})+\b').firstMatch(text)?.group(0);
+    if (series != null) return series;
+    final single = RegExp(r'\b\d{1,3}\b').firstMatch(text)?.group(0);
+    final failure = RegExp(r'\bFAILURE\b', caseSensitive: false).firstMatch(text)?.group(0);
+    final sec = RegExp(r'\b\d{1,3}\s*SEC\b', caseSensitive: false).firstMatch(text)?.group(0);
+    return failure ?? sec ?? single;
   }
 
   // Enhanced extraction with better workout grouping
