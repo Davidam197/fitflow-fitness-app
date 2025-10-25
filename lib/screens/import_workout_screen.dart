@@ -53,7 +53,7 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
           ? 1
           : (importedNumbers.reduce((a,b) => a > b ? a : b) + 1);
 
-      final workouts = await WebScrapingService.scrapeWorkouts(url, importIndex: nextIndex);
+      final workouts = await WebScrapingService.scrapeWorkouts(url);
       if (!mounted) return;
       
       // Generate group name
