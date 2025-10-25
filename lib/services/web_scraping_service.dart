@@ -64,6 +64,11 @@ class WebScrapingService {
     return workouts.length;
   }
 
+  /// Scrape workouts from URL without saving them. Returns list of workouts for organization.
+  static Future<List<Workout>> scrapeWorkouts(String url) async {
+    return await _importFromUrl(url);
+  }
+
   // ---------------- internal: orchestrate generic scrape + fallback ----------------
 
   static Future<List<Workout>> _importFromUrl(String url) async {

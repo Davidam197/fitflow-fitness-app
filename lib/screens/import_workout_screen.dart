@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/workout_provider.dart';
 import '../services/web_scraping_service.dart';
+import '../models/workout.dart';
 
 class ImportWorkoutScreen extends StatefulWidget {
   static const route = '/import-workout';
@@ -18,6 +20,7 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
         'https://www.muscleandfitness.com/routine/workouts/workout-routines/chris-hemsworths-god-thor-workout/',
   );
   bool _importing = false;
+  List<Workout> _importedWorkouts = [];
 
   @override
   void dispose() {
@@ -25,8 +28,7 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
     super.dispose();
   }
 
-  Future<void> _import() async {
-    final prov = context.read<WorkoutProvider>();
+  Future<void> _runImport() async {
     final url = _urlCtrl.text.trim();
     if (url.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -37,13 +39,15 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
 
     setState(() => _importing = true);
     try {
-      final count = await WebScrapingService.importAndSave(
-        provider: prov,
-        url: url,
-      );
+      final workouts = await WebScrapingService.scrapeWorkouts(url);
       if (!mounted) return;
+      
+      setState(() {
+        _importedWorkouts = workouts;
+      });
+      
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Imported $count workout(s)')),
+        SnackBar(content: Text('Found ${workouts.length} workout(s) - organize them below')),
       );
     } catch (e) {
       if (!mounted) return;
@@ -52,6 +56,106 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
       );
     } finally {
       if (mounted) setState(() => _importing = false);
+    }
+  }
+
+  Future<void> _organizeWorkout(Workout workout) async {
+    final nameController = TextEditingController(text: workout.name);
+    final groupController = TextEditingController();
+    String selectedCategory = workout.category;
+
+    final result = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Organize Workout'),
+        content: SizedBox(
+          width: 300,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Workout Name',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: groupController,
+                decoration: const InputDecoration(
+                  labelText: 'Group (e.g., "Upper Body", "Cardio", "Strength")',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: selectedCategory,
+                decoration: const InputDecoration(
+                  labelText: 'Category',
+                  border: OutlineInputBorder(),
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'Strength', child: Text('Strength')),
+                  DropdownMenuItem(value: 'Cardio', child: Text('Cardio')),
+                  DropdownMenuItem(value: 'Flexibility', child: Text('Flexibility')),
+                  DropdownMenuItem(value: 'HIIT', child: Text('HIIT')),
+                  DropdownMenuItem(value: 'Core', child: Text('Core')),
+                  DropdownMenuItem(value: 'Upper Body', child: Text('Upper Body')),
+                  DropdownMenuItem(value: 'Lower Body', child: Text('Lower Body')),
+                  DropdownMenuItem(value: 'Full Body', child: Text('Full Body')),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    selectedCategory = value;
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(context, {
+                'name': nameController.text.trim(),
+                'group': groupController.text.trim(),
+                'category': selectedCategory,
+              });
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null) {
+      final prov = context.read<WorkoutProvider>();
+      final organizedWorkout = Workout(
+        id: workout.id,
+        name: result['name']!,
+        category: result['category']!,
+        description: '${workout.description}${result['group']!.isNotEmpty ? ' | Group: ${result['group']}' : ''}',
+        durationMinutes: workout.durationMinutes,
+        difficulty: workout.difficulty,
+        exercises: workout.exercises,
+      );
+
+      await prov.importWorkouts([organizedWorkout]);
+      
+      setState(() {
+        _importedWorkouts.removeWhere((w) => w.id == workout.id);
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Workout organized and saved!')),
+        );
+      }
     }
   }
 
@@ -64,7 +168,7 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // URL input + button
+          // URL input section
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -82,11 +186,11 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
                     prefixIcon: Icon(Icons.link),
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
                 Align(
                   alignment: Alignment.centerRight,
                   child: FilledButton.icon(
-                    onPressed: _importing ? null : _import,
+                    onPressed: _importing ? null : _runImport,
                     icon: const Icon(Icons.cloud_download),
                     label: Text(_importing ? 'Importing…' : 'Import'),
                   ),
@@ -96,27 +200,78 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
           ),
           const SizedBox(height: 16),
 
-          // Existing workouts list (so you can see results immediately)
-          if (workouts.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(24),
-              child: Text(
-                'No workouts yet.\nPaste a URL above to import a plan.',
-                textAlign: TextAlign.center,
+          // Imported workouts section (for organization)
+          if (_importedWorkouts.isNotEmpty) ...[
+            Text(
+              'Organize Imported Workouts',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
               ),
-            )
-          else
+            ),
+            const SizedBox(height: 8),
+            ..._importedWorkouts.map(
+              (workout) => Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: ListTile(
+                  title: Text(workout.name),
+                  subtitle: Text('${workout.category} • ${workout.exercises.length} exercise(s)'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () => _organizeWorkout(workout),
+                        tooltip: 'Organize',
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () {
+                          setState(() {
+                            _importedWorkouts.removeWhere((w) => w.id == workout.id);
+                          });
+                        },
+                        tooltip: 'Remove',
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // Existing workouts section
+          if (workouts.isNotEmpty) ...[
+            Text(
+              'Your Workouts',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
             ...workouts.map(
               (w) => Card(
+                margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
                   title: Text(w.name),
                   subtitle: Text('${w.category} • ${w.exercises.length} exercise(s)'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
-                    // TODO: navigate to your workout detail screen if you have one
+                    // Hook up your workout detail route here if desired.
                     // Navigator.pushNamed(context, WorkoutDetailScreen.route, arguments: w.id);
                   },
                 ),
+              ),
+            ),
+          ],
+
+          // Empty state
+          if (workouts.isEmpty && _importedWorkouts.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(24),
+              child: Text(
+                'No workouts yet.\nPaste a URL above to import a plan.',
+                textAlign: TextAlign.center,
               ),
             ),
           const SizedBox(height: 24),
