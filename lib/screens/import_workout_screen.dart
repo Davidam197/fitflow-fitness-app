@@ -217,9 +217,7 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
         durationSeconds: workouts.fold(0, (sum, w) => sum + w.durationMinutes) * 60,
         equipment: '',
         notes: '${combinedExercises.length} exercises',
-        description: 'Click to start $bodyPart workout',
-        // Store the actual exercises in the description field as JSON string
-        // This is a workaround since we can't extend the Exercise model easily
+        description: _serializeExercises(combinedExercises), // Store actual exercises as JSON
       ));
     }
 
@@ -249,6 +247,23 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
       );
     }
   }
+
+  String _serializeExercises(List<Exercise> exercises) {
+    // Convert exercises to JSON string for storage
+    final List<Map<String, dynamic>> exerciseData = exercises.map((exercise) => {
+      'id': exercise.id,
+      'name': exercise.name,
+      'sets': exercise.sets,
+      'reps': exercise.reps,
+      'durationSeconds': exercise.durationSeconds,
+      'equipment': exercise.equipment,
+      'notes': exercise.notes,
+      'description': exercise.description,
+    }).toList();
+    
+    return exerciseData.toString(); // Simple string representation
+  }
+
 
   @override
   Widget build(BuildContext context) {
