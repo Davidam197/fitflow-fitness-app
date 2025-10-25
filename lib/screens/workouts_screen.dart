@@ -663,6 +663,7 @@ class _WorkoutCard extends StatelessWidget {
             final id = workout?.id ?? workout.hashCode;
             Navigator.of(context).pushNamed(WorkoutDetailScreen.route, arguments: id);
           },
+          onLongPress: () => _showDeleteDialog(context, workout),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -774,6 +775,39 @@ class _WorkoutCard extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _showDeleteDialog(BuildContext context, dynamic workout) {
+    final workoutName = (workout?.name ?? 'Workout').toString();
+    final workoutId = workout?.id ?? workout.hashCode.toString();
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Workout'),
+        content: Text('Are you sure you want to delete "$workoutName"? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              final prov = context.read<WorkoutProvider>();
+              await prov.deleteWorkout(workoutId);
+              if (context.mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Deleted "$workoutName"')),
+                );
+              }
+            },
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
       ),
     );
   }
