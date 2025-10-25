@@ -62,7 +62,12 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
   Future<void> _organizeWorkout(Workout workout) async {
     final nameController = TextEditingController(text: workout.name);
     final groupController = TextEditingController();
-    String selectedCategory = workout.category;
+    
+    // Ensure the selected category is valid for the dropdown
+    const validCategories = ['Strength', 'Cardio', 'Flexibility', 'HIIT', 'Core', 'Upper Body', 'Lower Body', 'Full Body'];
+    String selectedCategory = validCategories.contains(workout.category) 
+        ? workout.category 
+        : 'Strength'; // Default fallback
 
     final result = await showDialog<Map<String, String>>(
       context: context,
