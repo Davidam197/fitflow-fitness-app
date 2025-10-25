@@ -14,6 +14,7 @@ import 'screens/previous_workouts_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/import_workout_screen.dart';
 import 'screens/sub_workout_screen.dart';
+import 'screens/imported_workout_detail_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -141,6 +142,9 @@ class FitFlowApp extends StatelessWidget {
                   mainWorkoutId: '',
                   subWorkoutName: '',
                   exercises: [],
+                ),
+                ImportedWorkoutDetailScreen.route: (_) => const ImportedWorkoutDetailScreen(
+                  workoutId: '',
                 ),
               },
     );

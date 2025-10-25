@@ -8,6 +8,7 @@ import '../widgets/ff_widgets.dart';
 import '../services/ai_instructions_service.dart';
 import '../utils/responsive.dart';
 import 'sub_workout_screen.dart';
+import 'imported_workout_detail_screen.dart';
 
 class WorkoutDetailScreen extends StatelessWidget {
   static const route = '/workout';
@@ -18,6 +19,11 @@ class WorkoutDetailScreen extends StatelessWidget {
     final workoutId = ModalRoute.of(context)!.settings.arguments as String;
     final prov = context.watch<WorkoutProvider>();
     final Workout w = prov.byId(workoutId);
+
+    // Check if this is an imported workout
+    if (w.category == 'Imported' && _isImportedWorkout(w)) {
+      return ImportedWorkoutDetailScreen(workoutId: workoutId);
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -68,6 +74,19 @@ class WorkoutDetailScreen extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+
+  bool _isImportedWorkout(Workout workout) {
+    // Check if this is an imported workout by looking at exercise names
+    return workout.exercises.any((exercise) => 
+      exercise.name.toLowerCase().contains('workout') &&
+      (exercise.name.toLowerCase().contains('back') ||
+       exercise.name.toLowerCase().contains('chest') ||
+       exercise.name.toLowerCase().contains('leg') ||
+       exercise.name.toLowerCase().contains('arm') ||
+       exercise.name.toLowerCase().contains('shoulder') ||
+       exercise.name.toLowerCase().contains('core'))
     );
   }
 }

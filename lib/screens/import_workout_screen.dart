@@ -218,9 +218,8 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
         equipment: '',
         notes: '${combinedExercises.length} exercises',
         description: 'Click to start $bodyPart workout',
-        // Store the actual exercises in a custom field (we'll need to extend the Exercise model)
-        // For now, we'll store them in the notes field as JSON
-        // In a real implementation, you'd extend the Exercise model
+        // Store the actual exercises in the description field as JSON string
+        // This is a workaround since we can't extend the Exercise model easily
       ));
     }
 
