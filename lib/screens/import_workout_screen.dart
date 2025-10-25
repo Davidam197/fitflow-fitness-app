@@ -23,7 +23,6 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
   bool _importing = false;
   List<Workout> _importedWorkouts = [];
   String _importGroupName = '';
-  int _importGroupCounter = 1;
 
   @override
   void dispose() {
@@ -42,12 +41,23 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
 
     setState(() => _importing = true);
     try {
-      final workouts = await WebScrapingService.scrapeWorkouts(url);
+      // Calculate next import index safely
+      final importedNumbers = context.read<WorkoutProvider>().workouts
+          .map((w) => RegExp(r'^Imported Workout (\d+)').firstMatch(w.name))
+          .where((m) => m != null)
+          .map((m) => int.tryParse(m!.group(1)!))
+          .whereType<int>()
+          .toList();
+
+      final nextIndex = (importedNumbers.isEmpty)
+          ? 1
+          : (importedNumbers.reduce((a,b) => a > b ? a : b) + 1);
+
+      final workouts = await WebScrapingService.scrapeWorkouts(url, importIndex: nextIndex);
       if (!mounted) return;
       
       // Generate group name
-      final groupName = 'Imported Workout $_importGroupCounter';
-      _importGroupCounter++;
+      final groupName = 'Imported Workout $nextIndex';
       
       setState(() {
         _importedWorkouts = workouts;

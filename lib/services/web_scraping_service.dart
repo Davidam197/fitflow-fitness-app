@@ -124,7 +124,7 @@ class WebScrapingService {
     final body = doc.body;
     if (body == null) return [];
 
-    // Find headers that look like section names (Back, Chest, Legs, Shoulders, Arms, Bonus/Abs Circuit)
+    // 1) Collect headers that look like section names (in DOM order already).
     final headers = body.querySelectorAll('h1,h2,h3,h4,div,section')
         .where((e) {
           final t = _clean(e.text);
@@ -136,45 +136,42 @@ class WebScrapingService {
 
     if (headers.isEmpty) return [];
 
-    // Sort by document order
-    headers.sort((a, b) => a.sourceSpan!.start.offset.compareTo(b.sourceSpan!.start.offset));
+    // Create a set for O(1) "is this a header?" checks when walking siblings.
+    final headerSet = headers.toSet();
 
     final workouts = <Workout>[];
 
+    // 2) For each header, walk its subsequent siblings until we hit the next header.
     for (int i = 0; i < headers.length; i++) {
       final header = headers[i];
       final sectionName = _normalizeSectionName(_clean(header.text));
-      final untilNextHeaderOffset = (i < headers.length - 1)
-          ? headers[i + 1].sourceSpan!.start.offset
-          : 1 << 30; // big number
 
-      // Collect candidate row blocks after this header until the next header.
       final rows = <dom.Element>[];
       dom.Element? cursor = header.nextElementSibling;
-      while (cursor != null &&
-             (cursor.sourceSpan?.start.offset ?? 0) < untilNextHeaderOffset) {
 
+      while (cursor != null && !headerSet.contains(cursor)) {
         if (_looksLikeExerciseRow(cursor)) rows.add(cursor);
 
-        // also search within
-        for (final r in cursor.querySelectorAll('[class*="row"], [class*="item"], [class*="exercise"], li, article, div')) {
+        // also scan nested row-like blocks under this sibling
+        for (final r in cursor.querySelectorAll(
+          '[class*="row"], [class*="item"], [class*="exercise"], li, article, div')) {
           if (_looksLikeExerciseRow(r)) rows.add(r);
         }
+
         cursor = cursor.nextElementSibling;
       }
 
-      // Deduplicate rows by offset
-      final seen = <int>{};
+      // Deduplicate by identity (no sourceSpan assumptions)
+      final seen = <dom.Element>{};
       final rowList = <dom.Element>[];
       for (final r in rows) {
-        final key = r.sourceSpan?.start.offset ?? r.hashCode;
-        if (!seen.contains(key)) {
-          seen.add(key);
+        if (!seen.contains(r)) {
+          seen.add(r);
           rowList.add(r);
         }
       }
 
-      // Parse each row into Exercise
+      // Parse rows → Exercises
       final exercises = <Exercise>[];
       for (final row in rowList) {
         final ex = _parseStructuredRow(row);
@@ -228,24 +225,24 @@ class WebScrapingService {
 
   /// Parse a row that visually contains the columns: EXERCISE | EQUIPMENT | SETS | REPS | REST (+ note).
   static Exercise? _parseStructuredRow(dom.Element row) {
-    // Note (grey tip)
-    final noteNode = row.querySelector('p, .note, .tip, [class*="note"], [class*="tip"]');
-    final note = noteNode != null ? _clean(noteNode.text) : null;
+    final fullText = _clean(row.text); // safe even if row.text is null -> empty string
+    if (fullText.isEmpty) return null;
 
-    // Try column-by-label first
-    final name = _pickBestText(row, ['[class*="exercise-name"]','[class*="title"]','[class*="name"]','h4,h5,strong,b','a']) ?? _guessName(row);
+    final noteNode = row.querySelector('p, .note, .tip, [class*="note"], [class*="tip"]');
+    final note = (noteNode != null) ? _clean(noteNode.text) : null;
+
+    final name = _pickBestText(row, ['[class*="exercise-name"]','[class*="title"]','[class*="name"]','h4,h5,strong,b','a'])
+        ?? _guessName(row);
     if (name == null || name.isEmpty) return null;
 
-    final equipment = _pickLabeledValue(row, 'equipment') ?? _guessAfterLabel(_clean(row.text), 'equipment') ?? '';
-    final setsStr   = _pickLabeledValue(row, 'sets')      ?? _guessAfterLabel(_clean(row.text), 'sets')      ?? '--';
-    final repsStr   = _pickLabeledValue(row, 'reps')      ?? _guessAfterLabel(_clean(row.text), 'reps')      ?? _extractRepsSeries(_clean(row.text)) ?? '--';
-    final restStr   = _pickLabeledValue(row, 'rest')      ?? _guessAfterLabel(_clean(row.text), 'rest')      ?? '--';
+    final equipment = _pickLabeledValue(row, 'equipment') ?? _guessAfterLabel(fullText, 'equipment') ?? '';
+    final setsStr   = _pickLabeledValue(row, 'sets')      ?? _guessAfterLabel(fullText, 'sets')      ?? '--';
+    final repsStr   = _pickLabeledValue(row, 'reps')      ?? _guessAfterLabel(fullText, 'reps')      ?? _extractRepsSeries(fullText) ?? '--';
+    final restStr   = _pickLabeledValue(row, 'rest')      ?? _guessAfterLabel(fullText, 'rest')      ?? '--';
 
-    // Convert to numeric where reasonable but keep display verbatim in notes
     final sets = int.tryParse(setsStr.replaceAll(RegExp(r'[^0-9]'), ''));
     final reps = int.tryParse(repsStr.replaceAll(RegExp(r'[^0-9]'), ''));
 
-    // Compose a concise note that preserves verbatim values (your UI can show this as extra info)
     final compositeNote = [
       if (note != null && note.isNotEmpty) note,
       'Equipment: ${equipment.isEmpty ? "--" : equipment}',
