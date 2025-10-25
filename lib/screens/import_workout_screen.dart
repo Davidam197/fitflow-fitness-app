@@ -187,47 +187,8 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
 
     final prov = context.read<WorkoutProvider>();
     
-    // The new web scraping service creates individual workouts for each section
-    // We need to create a main group workout that references these individual workouts
-    final allExercises = <Exercise>[];
-    
-    for (final workout in _importedWorkouts) {
-      // Extract body part from workout name
-      String bodyPart = 'General';
-      final workoutName = workout.name.toLowerCase();
-      
-      if (workoutName.contains('back')) bodyPart = 'Back';
-      else if (workoutName.contains('chest')) bodyPart = 'Chest';
-      else if (workoutName.contains('leg')) bodyPart = 'Legs';
-      else if (workoutName.contains('arm')) bodyPart = 'Arms';
-      else if (workoutName.contains('shoulder')) bodyPart = 'Shoulders';
-      else if (workoutName.contains('core') || workoutName.contains('abs')) bodyPart = 'Core';
-      
-      // Create a "sub-workout" exercise that references the actual workout
-      allExercises.add(Exercise(
-        id: DateTime.now().microsecondsSinceEpoch.toString(),
-        name: '$bodyPart Workout',
-        sets: 1,
-        reps: 1,
-        durationSeconds: workout.durationMinutes * 60,
-        equipment: '',
-        notes: '${workout.exercises.length} exercises',
-        description: workout.id, // Store the actual workout ID for reference
-      ));
-    }
-
-    final groupedWorkout = Workout(
-      id: DateTime.now().microsecondsSinceEpoch.toString(),
-      name: _importGroupName,
-      category: 'Imported',
-      description: 'Imported workout group with ${_importedWorkouts.length} workout(s)',
-      durationMinutes: _importedWorkouts.fold(0, (sum, w) => sum + w.durationMinutes),
-      difficulty: 'Intermediate',
-      exercises: allExercises,
-    );
-
-    // Import both the individual workouts and the group workout
-    await prov.importWorkouts([groupedWorkout, ..._importedWorkouts]);
+    // Save the individual workouts directly
+    await prov.importWorkouts(_importedWorkouts);
     
     final workoutCount = _importedWorkouts.length;
     final groupName = _importGroupName;
@@ -239,7 +200,10 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Saved "$groupName" with $workoutCount workout(s) grouped by body part!')),
+        SnackBar(
+          content: Text('Saved $workoutCount workout(s) to Imported tab!'),
+          backgroundColor: const Color(0xFF7A5CFF),
+        ),
       );
     }
   }

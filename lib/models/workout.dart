@@ -62,4 +62,24 @@ class Workout extends HiveObject {
       e.completedSets = 0;
     }
   }
+
+  Workout copyWith({
+    String? id,
+    String? name,
+    String? category,
+    String? description,
+    int? durationMinutes,
+    String? difficulty,
+    List<Exercise>? exercises,
+  }) {
+    return Workout(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      category: category ?? this.category,
+      description: description ?? this.description,
+      durationMinutes: durationMinutes ?? this.durationMinutes,
+      difficulty: difficulty ?? this.difficulty,
+      exercises: exercises ?? this.exercises,
+    );
+  }
 }

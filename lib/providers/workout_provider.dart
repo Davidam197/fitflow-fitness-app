@@ -100,4 +100,13 @@ class WorkoutProvider extends ChangeNotifier {
     _workouts.removeWhere((w) => w.id == workoutId);
     notifyListeners();
   }
+
+  Future<void> updateWorkout(Workout workout) async {
+    await _repo.upsert(workout);
+    final index = _workouts.indexWhere((w) => w.id == workout.id);
+    if (index != -1) {
+      _workouts[index] = workout;
+      notifyListeners();
+    }
+  }
 }

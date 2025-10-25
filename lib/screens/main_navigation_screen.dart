@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'workouts_screen.dart';
+import 'imported_workouts_screen.dart';
 import 'active_workouts_screen.dart';
 import 'settings_screen.dart';
 import '../navigation/navigation_controller.dart';
@@ -17,6 +18,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const WorkoutsScreen(),
+    const ImportedWorkoutsScreen(),
     const ActiveWorkoutsScreen(),
     const SettingsScreen(),
   ];
@@ -145,6 +147,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               _buildNavDestination(
                 context,
                 index: 2,
+                icon: Icons.download_outlined,
+                selectedIcon: Icons.download,
+                label: 'Imported',
+                color: const Color(0xFF7A5CFF), // Purple
+              ),
+              _buildNavDestination(
+                context,
+                index: 3,
                 icon: Icons.play_circle_outline,
                 selectedIcon: Icons.play_circle,
                 label: 'Active',
@@ -152,7 +162,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               ),
               _buildNavDestination(
                 context,
-                index: 3,
+                index: 4,
                 icon: Icons.settings_outlined,
                 selectedIcon: Icons.settings,
                 label: 'Settings',
