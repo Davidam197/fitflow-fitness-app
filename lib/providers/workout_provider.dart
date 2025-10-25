@@ -94,4 +94,10 @@ class WorkoutProvider extends ChangeNotifier {
     _workouts.addAll(toAdd);
     notifyListeners();
   }
+
+  Future<void> deleteWorkout(String workoutId) async {
+    await _repo.delete(workoutId);
+    _workouts.removeWhere((w) => w.id == workoutId);
+    notifyListeners();
+  }
 }

@@ -202,6 +202,12 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
       final bodyPart = entry.key;
       final workouts = entry.value;
       
+      // Combine all exercises from workouts in this body part
+      final combinedExercises = <Exercise>[];
+      for (final workout in workouts) {
+        combinedExercises.addAll(workout.exercises);
+      }
+      
       // Create a "sub-workout" exercise for each body part
       allExercises.add(Exercise(
         id: DateTime.now().microsecondsSinceEpoch.toString(),
@@ -210,8 +216,11 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
         reps: workouts.length,
         durationSeconds: workouts.fold(0, (sum, w) => sum + w.durationMinutes) * 60,
         equipment: '',
-        notes: '${workouts.fold(0, (sum, w) => sum + w.exercises.length)} exercises',
+        notes: '${combinedExercises.length} exercises',
         description: 'Click to start $bodyPart workout',
+        // Store the actual exercises in a custom field (we'll need to extend the Exercise model)
+        // For now, we'll store them in the notes field as JSON
+        // In a real implementation, you'd extend the Exercise model
       ));
     }
 

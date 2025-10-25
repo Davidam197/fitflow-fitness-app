@@ -270,6 +270,35 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
 }
 
+void _showDeleteDialog(BuildContext context, WorkoutProvider prov, String workoutId, String workoutName) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Delete Workout'),
+      content: Text('Are you sure you want to delete "$workoutName"? This action cannot be undone.'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () async {
+            await prov.deleteWorkout(workoutId);
+            if (context.mounted) {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Deleted "$workoutName"')),
+              );
+            }
+          },
+          style: FilledButton.styleFrom(backgroundColor: Colors.red),
+          child: const Text('Delete'),
+        ),
+      ],
+    ),
+  );
+}
+
 class _Stat extends StatelessWidget {
   final IconData icon; final String value; final String label;
   const _Stat({required this.icon, required this.value, required this.label});
@@ -431,23 +460,36 @@ class _WorkoutListCard extends StatelessWidget {
             )),
           ]),
           const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: w.isCompleted
-                          ? () => prov.resetWorkout(w.id)
-                          : () => Navigator.pushNamed(context, '/workout', arguments: w.id),
-                      icon: Icon(w.isCompleted ? Icons.refresh : Icons.play_arrow),
-                      label: Text(w.primaryAction),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: w.category == 'Cardio' ? Colors.green : Colors.blue,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16), // Increased for mobile
-                        minimumSize: const Size(0, 48), // Minimum touch target height
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: w.isCompleted
+                      ? () => prov.resetWorkout(w.id)
+                      : () => Navigator.pushNamed(context, '/workout', arguments: w.id),
+                  icon: Icon(w.isCompleted ? Icons.refresh : Icons.play_arrow),
+                  label: Text(w.primaryAction),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: w.category == 'Cardio' ? Colors.green : Colors.blue,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    minimumSize: const Size(0, 48),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: () => _showDeleteDialog(context, prov, w.id, w.name),
+                icon: const Icon(Icons.delete, color: Colors.red),
+                tooltip: 'Delete Workout',
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.red.withOpacity(0.1),
+                  padding: const EdgeInsets.all(12),
+                ),
+              ),
+            ],
+          ),
         ]),
       ),
     );

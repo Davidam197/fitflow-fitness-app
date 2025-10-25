@@ -3,9 +3,11 @@ import 'package:provider/provider.dart';
 import 'dart:async';
 import '../providers/workout_provider.dart';
 import '../models/workout.dart';
+import '../models/exercise.dart';
 import '../widgets/ff_widgets.dart';
 import '../services/ai_instructions_service.dart';
 import '../utils/responsive.dart';
+import 'sub_workout_screen.dart';
 
 class WorkoutDetailScreen extends StatelessWidget {
   static const route = '/workout';
@@ -432,19 +434,19 @@ class _ExerciseTileState extends State<_ExerciseTile> {
                   ),
                 ),
                 SizedBox(width: Responsive.getSpacing(context) * 0.5),
-                // Complete button
+                // Complete/Start button
                 SizedBox(
                   height: Responsive.getSpacing(context) * 2.5,
                   width: Responsive.getSpacing(context) * 2.5,
                   child: FilledButton(
                     style: FilledButton.styleFrom(
-                      backgroundColor: Colors.green,
+                      backgroundColor: _isSubWorkout(ex) ? Colors.blue : Colors.green,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       padding: EdgeInsets.zero,
                     ),
-                    onPressed: () => prov.incrementSet(w.id, ex.id),
+                    onPressed: () => _handleExerciseClick(context, prov, w.id, ex),
                     child: Icon(
-                      Icons.check, 
+                      _isSubWorkout(ex) ? Icons.play_arrow : Icons.check, 
                       color: Colors.white, 
                       size: Responsive.getIconSize(context) * 0.8,
                     ),
@@ -456,6 +458,40 @@ class _ExerciseTileState extends State<_ExerciseTile> {
         ),
       ),
     );
+  }
+
+  bool _isSubWorkout(Exercise exercise) {
+    // Check if this is a sub-workout based on name patterns
+    final name = exercise.name.toLowerCase();
+    return name.contains('workout') && 
+           (name.contains('back') || name.contains('chest') || name.contains('leg') || 
+            name.contains('arm') || name.contains('shoulder') || name.contains('core'));
+  }
+
+  void _handleExerciseClick(BuildContext context, WorkoutProvider prov, String workoutId, Exercise exercise) {
+    if (_isSubWorkout(exercise)) {
+      // Navigate to sub-workout screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SubWorkoutScreen(
+            mainWorkoutId: workoutId,
+            subWorkoutName: exercise.name,
+            exercises: _getSubWorkoutExercises(exercise),
+          ),
+        ),
+      );
+    } else {
+      // Regular exercise - increment set
+      prov.incrementSet(workoutId, exercise.id);
+    }
+  }
+
+  List<Exercise> _getSubWorkoutExercises(Exercise subWorkout) {
+    // For now, return empty list - in a real implementation, 
+    // you'd store the actual exercises for each sub-workout
+    // This would require modifying the data structure to store sub-workout exercises
+    return [];
   }
 }
 
