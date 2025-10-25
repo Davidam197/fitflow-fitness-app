@@ -250,7 +250,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ]),
           const SizedBox(height: 16),
-          FFSectionHeader(title: 'Your Workouts', onAction: (){}),
+          FFSectionHeader(
+            title: 'Your Workouts', 
+            onAction: () {
+              // Navigate to workouts tab (index 1)
+              NavigationController.navigateToTab(1);
+            }
+          ),
           ...workouts.map((w) => Padding(
             padding: const EdgeInsets.only(bottom: 5),
             child: _WorkoutListCard(workoutId: w.id),
