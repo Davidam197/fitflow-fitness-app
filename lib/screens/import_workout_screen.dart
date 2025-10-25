@@ -177,47 +177,32 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
 
     final prov = context.read<WorkoutProvider>();
     
-    // Group workouts by body part/muscle group
-    final Map<String, List<Workout>> groupedWorkouts = {};
-    
-    for (final workout in _importedWorkouts) {
-      // Extract body part from workout name or description
-      String bodyPart = 'General';
-      final workoutText = '${workout.name} ${workout.description}'.toLowerCase();
-      
-      if (workoutText.contains('back')) bodyPart = 'Back';
-      else if (workoutText.contains('chest')) bodyPart = 'Chest';
-      else if (workoutText.contains('leg')) bodyPart = 'Legs';
-      else if (workoutText.contains('arm')) bodyPart = 'Arms';
-      else if (workoutText.contains('shoulder')) bodyPart = 'Shoulders';
-      else if (workoutText.contains('core') || workoutText.contains('abs')) bodyPart = 'Core';
-      
-      groupedWorkouts.putIfAbsent(bodyPart, () => []).add(workout);
-    }
-    
-    // Create a main workout with sub-workouts as "exercises"
+    // The new web scraping service creates individual workouts for each section
+    // We need to create a main group workout that references these individual workouts
     final allExercises = <Exercise>[];
     
-    for (final entry in groupedWorkouts.entries) {
-      final bodyPart = entry.key;
-      final workouts = entry.value;
+    for (final workout in _importedWorkouts) {
+      // Extract body part from workout name
+      String bodyPart = 'General';
+      final workoutName = workout.name.toLowerCase();
       
-      // Combine all exercises from workouts in this body part
-      final combinedExercises = <Exercise>[];
-      for (final workout in workouts) {
-        combinedExercises.addAll(workout.exercises);
-      }
+      if (workoutName.contains('back')) bodyPart = 'Back';
+      else if (workoutName.contains('chest')) bodyPart = 'Chest';
+      else if (workoutName.contains('leg')) bodyPart = 'Legs';
+      else if (workoutName.contains('arm')) bodyPart = 'Arms';
+      else if (workoutName.contains('shoulder')) bodyPart = 'Shoulders';
+      else if (workoutName.contains('core') || workoutName.contains('abs')) bodyPart = 'Core';
       
-      // Create a "sub-workout" exercise for each body part
+      // Create a "sub-workout" exercise that references the actual workout
       allExercises.add(Exercise(
         id: DateTime.now().microsecondsSinceEpoch.toString(),
         name: '$bodyPart Workout',
         sets: 1,
-        reps: workouts.length,
-        durationSeconds: workouts.fold(0, (sum, w) => sum + w.durationMinutes) * 60,
+        reps: 1,
+        durationSeconds: workout.durationMinutes * 60,
         equipment: '',
-        notes: '${combinedExercises.length} exercises',
-        description: _serializeExercises(combinedExercises), // Store actual exercises as JSON
+        notes: '${workout.exercises.length} exercises',
+        description: workout.id, // Store the actual workout ID for reference
       ));
     }
 
@@ -225,13 +210,14 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
       id: DateTime.now().microsecondsSinceEpoch.toString(),
       name: _importGroupName,
       category: 'Imported',
-      description: 'Imported workout group with ${groupedWorkouts.length} body part(s)',
+      description: 'Imported workout group with ${_importedWorkouts.length} workout(s)',
       durationMinutes: _importedWorkouts.fold(0, (sum, w) => sum + w.durationMinutes),
       difficulty: 'Intermediate',
       exercises: allExercises,
     );
 
-    await prov.importWorkouts([groupedWorkout]);
+    // Import both the individual workouts and the group workout
+    await prov.importWorkouts([groupedWorkout, ..._importedWorkouts]);
     
     final workoutCount = _importedWorkouts.length;
     final groupName = _importGroupName;
@@ -248,21 +234,6 @@ class _ImportWorkoutScreenState extends State<ImportWorkoutScreen> {
     }
   }
 
-  String _serializeExercises(List<Exercise> exercises) {
-    // Convert exercises to JSON string for storage
-    final List<Map<String, dynamic>> exerciseData = exercises.map((exercise) => {
-      'id': exercise.id,
-      'name': exercise.name,
-      'sets': exercise.sets,
-      'reps': exercise.reps,
-      'durationSeconds': exercise.durationSeconds,
-      'equipment': exercise.equipment,
-      'notes': exercise.notes,
-      'description': exercise.description,
-    }).toList();
-    
-    return exerciseData.toString(); // Simple string representation
-  }
 
 
   @override
