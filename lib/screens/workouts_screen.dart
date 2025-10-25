@@ -176,8 +176,10 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
           ),
         ),
         actions: [
-          // Responsive actions based on screen size
-          LayoutBuilder(
+          // Add right margin to the actions
+          Padding(
+            padding: EdgeInsets.only(right: Responsive.getSpacing(context)),
+            child: LayoutBuilder(
             builder: (context, constraints) {
               final screenWidth = constraints.maxWidth;
               final isTablet = screenWidth > 600;
@@ -314,6 +316,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                 );
               }
             },
+            ),
           ),
         ],
       ),
