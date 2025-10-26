@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/workout_provider.dart';
+import '../models/exercise.dart';
 import '../screens/workout_detail_screen.dart';
 import 'create_workout_screen.dart';
 import '../widgets/fitflow_sliver_header.dart';
@@ -119,8 +120,8 @@ class _ActiveWorkoutCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final progress = workout.progressPercent ?? 0;
-    final exercises = workout.exercises ?? [];
-    final completedExercises = exercises.where((ex) => ex.isCompleted).length;
+    final exercises = (workout.exercises as List<Exercise>?) ?? [];
+    final completedExercises = exercises.where((ex) => ex.isDone).length;
     final totalExercises = exercises.length;
 
     return Card(
