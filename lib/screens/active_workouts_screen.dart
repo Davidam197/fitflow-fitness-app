@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/workout_provider.dart';
 import '../screens/workout_detail_screen.dart';
 import 'create_workout_screen.dart';
-import '../widgets/fitflow_header.dart';
+import '../widgets/fitflow_sliver_header.dart';
 import '../utils/responsive.dart';
 
 class ActiveWorkoutsScreen extends StatelessWidget {
@@ -17,28 +17,35 @@ class ActiveWorkoutsScreen extends StatelessWidget {
     ).toList();
 
     return Scaffold(
-      appBar: FitFlowHeader(
-        title: 'Active Workouts',
-        subtitle: 'Pick up where you left off',
-        actions: const [],
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          color: Color.fromRGBO(252, 252, 255, 1.0), // Off-white with slight blue tint
-        ),
-        child: activeWorkouts.isEmpty
-            ? _EmptyState()
-            : ListView.builder(
-                padding: Responsive.getScreenPadding(context),
-                itemCount: activeWorkouts.length,
-                itemBuilder: (context, index) {
-                  final workout = activeWorkouts[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: _ActiveWorkoutCard(workout: workout),
-                  );
-                },
-              ),
+      body: CustomScrollView(
+        slivers: [
+          FitFlowSliverHeader(
+            title: 'Active Workouts',
+            subtitle: 'Pick up where you left off',
+            actions: const [],
+            centerTitle: true,
+          ),
+          SliverToBoxAdapter(child: SizedBox(height: 12)),
+          activeWorkouts.isEmpty
+              ? SliverFillRemaining(
+                  child: _EmptyState(),
+                )
+              : SliverPadding(
+                  padding: Responsive.getScreenPadding(context),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final workout = activeWorkouts[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _ActiveWorkoutCard(workout: workout),
+                        );
+                      },
+                      childCount: activeWorkouts.length,
+                    ),
+                  ),
+                ),
+        ],
       ),
     );
   }

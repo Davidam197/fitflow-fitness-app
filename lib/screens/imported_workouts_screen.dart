@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/workout_provider.dart';
-import '../widgets/fitflow_header.dart';
+import '../widgets/fitflow_sliver_header.dart';
+import '../widgets/fitflow_header.dart' show HeaderAction;
 import '../utils/responsive.dart';
 import 'import_workout_screen.dart';
 import 'imported_workout_detail_screen.dart';
@@ -17,52 +18,62 @@ class ImportedWorkoutsScreen extends StatelessWidget {
         .toList();
 
     return Scaffold(
-      appBar: FitFlowHeader(
-        title: 'Imported Workouts',
-        subtitle: 'Manage your imported workout plans',
-        actions: [
-          HeaderAction(
-            icon: Icons.add,
-            label: 'Import',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ImportWorkoutScreen(),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          color: Color.fromRGBO(252, 252, 255, 1.0), // Off-white with slight blue tint
-        ),
-        child: importedWorkouts.isEmpty
-            ? _buildEmptyState(context)
-            : ListView.builder(
-                padding: EdgeInsets.all(Responsive.getSpacing(context)),
-                itemCount: importedWorkouts.length,
-                itemBuilder: (context, index) {
-                  final workout = importedWorkouts[index];
-                  return _ImportedWorkoutCard(
-                    workout: workout,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ImportedWorkoutDetailScreen(workoutId: workout.id),
-                        ),
-                      );
-                    },
-                    onMoveToHome: () => _moveToHome(context, workoutProvider, workout),
-                    onMoveToWorkouts: () => _moveToWorkouts(context, workoutProvider, workout),
-                    onRename: () => _renameWorkout(context, workoutProvider, workout),
-                    onDelete: () => _deleteWorkout(context, workoutProvider, workout),
+      body: CustomScrollView(
+        slivers: [
+          FitFlowSliverHeader(
+            title: 'Imported Workouts',
+            subtitle: 'Manage your imported workout plans',
+            actions: [
+              HeaderAction(
+                icon: Icons.add,
+                label: 'Import',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ImportWorkoutScreen(),
+                    ),
                   );
                 },
               ),
+            ],
+            centerTitle: false,
+          ),
+          SliverToBoxAdapter(child: SizedBox(height: 12)),
+          importedWorkouts.isEmpty
+              ? SliverFillRemaining(
+                  child: _buildEmptyState(context),
+                )
+              : SliverPadding(
+                  padding: EdgeInsets.all(Responsive.getSpacing(context)),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final workout = importedWorkouts[index];
+                        return Padding(
+                          padding: EdgeInsets.only(bottom: Responsive.getSpacing(context)),
+                          child: _ImportedWorkoutCard(
+                            workout: workout,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ImportedWorkoutDetailScreen(workoutId: workout.id),
+                                ),
+                              );
+                            },
+                            onMoveToHome: () => _moveToHome(context, workoutProvider, workout),
+                            onMoveToWorkouts: () => _moveToWorkouts(context, workoutProvider, workout),
+                            onRename: () => _renameWorkout(context, workoutProvider, workout),
+                            onDelete: () => _deleteWorkout(context, workoutProvider, workout),
+                          ),
+                        );
+                      },
+                      childCount: importedWorkouts.length,
+                    ),
+                  ),
+                ),
+        ],
       ),
     );
   }

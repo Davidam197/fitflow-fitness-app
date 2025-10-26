@@ -7,7 +7,8 @@ import '../providers/membership_provider.dart';
 import '../screens/create_workout_screen.dart';
 import '../screens/workout_detail_screen.dart';
 import '../screens/import_workout_screen.dart';
-import '../widgets/fitflow_header.dart';
+import '../widgets/fitflow_sliver_header.dart';
+import '../widgets/fitflow_header.dart' show HeaderAction;
 import '../utils/responsive.dart';
 
 class WorkoutsScreen extends StatefulWidget {
@@ -119,28 +120,34 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
     final list = _filtered(nonImportedWorkouts);
 
     return Scaffold(
-      appBar: FitFlowHeader(
-        title: 'Workouts',
-        subtitle: 'Search, filter, and manage plans',
-        actions: [
-          HeaderAction(
-            icon: Icons.library_add_outlined,
-            label: 'Import',
-            onTap: () => Navigator.of(context).pushNamed(ImportWorkoutScreen.route),
-          ),
-          HeaderAction(
-            icon: Icons.add,
-            label: 'Create',
-            onTap: () => Navigator.of(context).pushNamed(CreateWorkoutScreen.route),
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) => [
+          FitFlowSliverHeader(
+            title: 'Workouts',
+            subtitle: 'Search, filter, and manage plans',
+            actions: [
+              HeaderAction(
+                icon: Icons.library_add_outlined,
+                label: 'Import',
+                onTap: () => Navigator.of(context).pushNamed(ImportWorkoutScreen.route),
+              ),
+              HeaderAction(
+                icon: Icons.add,
+                label: 'Create',
+                onTap: () => Navigator.of(context).pushNamed(CreateWorkoutScreen.route),
+              ),
+            ],
+            expandedHeight: 156,
+            toolbarHeight: kToolbarHeight,
+            centerTitle: false,
           ),
         ],
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          color: Color.fromRGBO(252, 252, 255, 1.0), // Off-white with slight blue tint
-        ),
-        child: ListView(
-          padding: EdgeInsets.zero,
+        body: Container(
+          decoration: const BoxDecoration(
+            color: Color.fromRGBO(252, 252, 255, 1.0), // Off-white with slight blue tint
+          ),
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
           children: [
           // Search + Filters
           Padding(
@@ -349,7 +356,6 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
             ),
           const SizedBox(height: 16),
         ],
-        ),
       ),
     );
   }
@@ -695,6 +701,6 @@ class _EmptyState extends StatelessWidget {
             ),
         ],
       ),
-    );
+    ),
   }
 }
