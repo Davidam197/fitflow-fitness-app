@@ -33,16 +33,20 @@ class ImportedWorkoutsScreen extends StatelessWidget {
                     Container(
                       padding: EdgeInsets.all(Responsive.getSpacing(context)),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
+                        gradient: const LinearGradient(
                           colors: [
-                            const Color(0xFF7A5CFF).withOpacity(0.1),
-                            const Color(0xFF3E6CF6).withOpacity(0.05),
+                            Color(0xFF7A5CFF), // Vibrant Purple
+                            Color(0xFF3E6CF6), // Vibrant Blue
                           ],
                         ),
                         borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
-                        border: Border.all(
-                          color: const Color(0xFF7A5CFF).withOpacity(0.2),
-                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF7A5CFF).withOpacity(0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
                       ),
                       child: Container(
                         padding: EdgeInsets.all(Responsive.getSpacing(context) * 0.5),
@@ -68,13 +72,13 @@ class ImportedWorkoutsScreen extends StatelessWidget {
                             'Imported Workouts',
                             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFF0E1625), // Dark navy
+                              color: Colors.white,
                             ),
                           ),
                           Text(
                             'Manage your imported workout plans',
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: const Color(0xFF7C8AA3), // Subtext
+                              color: Colors.white.withOpacity(0.9),
                             ),
                           ),
                         ],

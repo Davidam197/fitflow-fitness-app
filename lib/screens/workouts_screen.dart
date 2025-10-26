@@ -131,16 +131,20 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                const Color(0xFF4E6CF8).withOpacity(0.1), // Blue accent
-                const Color(0xFF3ECF8E).withOpacity(0.05), // Green accent
+                const Color(0xFF4E6CF8), // Vibrant Blue
+                const Color(0xFF3ECF8E), // Fresh Green
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
-            border: Border.all(
-              color: const Color(0xFF4E6CF8).withOpacity(0.2),
-            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF4E6CF8).withOpacity(0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -170,7 +174,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
                   fontSize: Responsive.getTitleFontSize(context),
-                  color: const Color(0xFF0E1625), // Dark navy
+                  color: Colors.white, // White for contrast
                 ),
                 overflow: TextOverflow.ellipsis,
               ),

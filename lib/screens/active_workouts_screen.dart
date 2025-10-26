@@ -29,16 +29,20 @@ class ActiveWorkoutsScreen extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                const Color(0xFF20C38B).withOpacity(0.1), // Fresh green
-                const Color(0xFF00BFA5).withOpacity(0.05), // Teal
+                const Color(0xFF20C38B), // Fresh Green
+                const Color(0xFF00BFA5), // Teal
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
-            border: Border.all(
-              color: const Color(0xFF20C38B).withOpacity(0.2),
-            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF20C38B).withOpacity(0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -68,7 +72,7 @@ class ActiveWorkoutsScreen extends StatelessWidget {
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
                   fontSize: Responsive.getTitleFontSize(context),
-                  color: const Color(0xFF0E1625), // Dark navy
+                  color: Colors.white, // White for contrast
                 ),
               ),
             ],
