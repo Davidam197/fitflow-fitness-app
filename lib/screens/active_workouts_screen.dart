@@ -118,9 +118,10 @@ class _ActiveWorkoutCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final progress = workout.progressPercentage;
-    final completedExercises = workout.exercises.where((ex) => ex.isCompleted).length;
-    final totalExercises = workout.exercises.length;
+    final progress = workout.progressPercentage ?? 0.0;
+    final exercises = workout.exercises ?? [];
+    final completedExercises = exercises.where((ex) => ex.isCompleted).length;
+    final totalExercises = exercises.length;
 
     return Card(
       margin: EdgeInsets.symmetric(
@@ -147,7 +148,7 @@ class _ActiveWorkoutCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          workout.name,
+                          workout.name ?? 'Workout',
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: Theme.of(context).colorScheme.onSurface,
@@ -172,7 +173,7 @@ class _ActiveWorkoutCard extends StatelessWidget {
                                 ),
                               ),
                               child: Text(
-                                workout.category,
+                                workout.category ?? 'General',
                                 style: TextStyle(
                                   color: _getCategoryColor(workout.category),
                                   fontSize: 11,
@@ -270,12 +271,12 @@ class _ActiveWorkoutCard extends StatelessWidget {
                 children: [
                   _StatItem(
                     label: 'Duration',
-                    value: '${workout.durationMinutes} min',
+                    value: '${workout.durationMinutes ?? 0} min',
                     icon: Icons.timer_outlined,
                   ),
                   _StatItem(
                     label: 'Difficulty',
-                    value: workout.difficulty,
+                    value: workout.difficulty ?? 'Beginner',
                     icon: Icons.trending_up,
                   ),
                   _StatItem(
@@ -318,8 +319,8 @@ class _ActiveWorkoutCard extends StatelessWidget {
     );
   }
 
-  Color _getCategoryColor(String category) {
-    switch (category.toLowerCase()) {
+  Color _getCategoryColor(String? category) {
+    switch (category?.toLowerCase()) {
       case 'cardio':
         return const Color(0xFF3ECF8E); // Green
       case 'strength':
