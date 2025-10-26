@@ -26,7 +26,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
   String _sortBy = 'Name';
 
   final List<String> _categories = const ['All', 'Cardio', 'Strength', 'Flexibility', 'HIIT'];
-  final List<String> _difficulties = const ['All', 'Beginner', 'Intermediate', 'Advanced'];
+  final List<String> _difficulties = const ['All', 'Easy', 'Medium', 'Hard'];
   final List<String> _sortOptions = const ['Name', 'Duration', 'Difficulty', 'Progress'];
 
   @override
@@ -89,7 +89,7 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
         list.sort((a, b) => dur(b).compareTo(dur(a)));
         break;
       case 'Difficulty':
-        const order = {'Beginner': 1, 'Intermediate': 2, 'Advanced': 3};
+        const order = {'Easy': 1, 'Medium': 2, 'Hard': 3};
         int rank(dynamic w) => order[diff(w)] ?? 0;
         list.sort((a, b) => rank(a).compareTo(rank(b)));
         break;
@@ -725,11 +725,11 @@ class _WorkoutCard extends StatelessWidget {
                           _pill(
                             context,
                             difficulty,
-                            difficulty == 'Beginner'
+                            difficulty == 'Easy'
                                 ? const Color(0xFF4CAF50) // Green
-                                : difficulty == 'Intermediate'
+                                : difficulty == 'Medium'
                                     ? const Color(0xFFFF9800) // Orange
-                                    : const Color(0xFFE91E63), // Pink/Red for Advanced
+                                    : const Color(0xFFE91E63), // Pink/Red for Hard
                           ),
                         ],
                       ),

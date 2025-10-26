@@ -246,7 +246,7 @@ class WebScrapingService {
             category: _guessCategory(sectionName),
             description: 'Imported from web (section: $sectionName) (Source: $sourceUrl)',
             durationMinutes: 55,
-            difficulty: 'Intermediate',
+            difficulty: 'Medium',
             exercises: exercises,
           ),
         );
@@ -420,7 +420,7 @@ class WebScrapingService {
         category: _guessCategory(header),
         description: 'Imported from web - $currentGroup',
         durationMinutes: 45,
-        difficulty: 'Intermediate',
+        difficulty: 'Medium',
         exercises: [],
       );
     }
@@ -664,7 +664,7 @@ class WebScrapingService {
         category: 'Back',
         description: 'Imported Thor Plan',
         durationMinutes: 60,
-        difficulty: 'Intermediate',
+        difficulty: 'Medium',
         exercises: [
           ex('Pullup', sets: 5, reps: 20, notes: 'Rep scheme: 20, 15, 12, 10, 10'),
           ex('Pushup', sets: 5, reps: 20),
@@ -679,7 +679,7 @@ class WebScrapingService {
         category: 'Chest',
         description: 'Imported Thor Plan',
         durationMinutes: 60,
-        difficulty: 'Intermediate',
+        difficulty: 'Medium',
         exercises: [
           ex('Barbell Bench Press', sets: 8, reps: 12,
              notes: 'Rep scheme: 12, 10, 10, 8, 8, 6, 4, 4'),
@@ -695,7 +695,7 @@ class WebScrapingService {
         category: 'Legs',
         description: 'Imported Thor Plan',
         durationMinutes: 70,
-        difficulty: 'Intermediate',
+        difficulty: 'Medium',
         exercises: [
           ex('Back Squat', sets: 7, reps: 10, notes: 'Rep scheme: 10, 8, 6, 5, 4, 3, 3'),
           ex('Leg Press', sets: 1, reps: 12, notes: 'To failure / strip set'),
@@ -711,7 +711,7 @@ class WebScrapingService {
         category: 'Shoulders',
         description: 'Imported Thor Plan',
         durationMinutes: 60,
-        difficulty: 'Intermediate',
+        difficulty: 'Medium',
         exercises: [
           ex('Military Press', sets: 7, reps: 10, notes: 'Rep scheme: 10, 8, 6, 5, 4, 3, 3'),
           ex('Arnold Press', sets: 4, reps: 12),
@@ -727,7 +727,7 @@ class WebScrapingService {
         category: 'Arms',
         description: 'Imported Thor Plan',
         durationMinutes: 60,
-        difficulty: 'Intermediate',
+        difficulty: 'Medium',
         exercises: [
           ex('Barbell Biceps Curl', sets: 3, reps: 10),
           ex('Skull Crusher', sets: 3, reps: 10),
@@ -745,7 +745,7 @@ class WebScrapingService {
         category: 'Core',
         description: 'Imported Thor Plan',
         durationMinutes: 20,
-        difficulty: 'Intermediate',
+        difficulty: 'Medium',
         exercises: [
           ex('Hanging Leg Raise', sets: 3, reps: 12),
           ex('Cable Woodchop', sets: 3, reps: 12),
