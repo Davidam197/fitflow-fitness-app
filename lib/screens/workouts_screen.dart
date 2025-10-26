@@ -357,6 +357,8 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
           const SizedBox(height: 16),
         ],
       ),
+    ),
+    ),
     );
   }
 }
@@ -701,6 +703,6 @@ class _EmptyState extends StatelessWidget {
             ),
         ],
       ),
-    ),
+    );
   }
 }
