@@ -303,8 +303,24 @@ class GradientAppBar extends StatelessWidget implements PreferredSizeWidget {
       flexibleSpace: Container(
         decoration: BoxDecoration(gradient: gradient),
       ),
-      title: Text(title),
+      title: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+          fontSize: 20,
+          shadows: [
+            Shadow(
+              offset: Offset(0, 1),
+              blurRadius: 2,
+              color: Colors.black26,
+            ),
+          ],
+        ),
+      ),
       actions: actions,
+      iconTheme: const IconThemeData(color: Colors.white),
+      systemOverlayStyle: SystemUiOverlayStyle.light,
     );
   }
 

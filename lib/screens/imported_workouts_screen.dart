@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/workout_provider.dart';
+import '../theme/energetic_fitness_theme.dart';
 import '../utils/responsive.dart';
 import 'import_workout_screen.dart';
 import 'imported_workout_detail_screen.dart';
@@ -10,144 +11,64 @@ class ImportedWorkoutsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final workoutProvider = context.watch<WorkoutProvider>();
+    final importedWorkouts = workoutProvider.workouts
+        .where((w) => w.description.contains('Imported from web'))
+        .toList();
+
     return Scaffold(
+      appBar: GradientAppBar(
+        title: 'Imported Workouts',
+        actions: [
+          GradientButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ImportWorkoutScreen(),
+                ),
+              );
+            },
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.add, size: 18),
+                SizedBox(width: 8),
+                Text('Import'),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+        ],
+      ),
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFF8FAFF), // Light blue background
-              Color(0xFFE8F0FF), // Slightly darker blue
-            ],
-          ),
+          color: Color.fromRGBO(252, 252, 255, 1.0), // Off-white with slight blue tint
         ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Header
-              Container(
+        child: importedWorkouts.isEmpty
+            ? _buildEmptyState(context)
+            : ListView.builder(
                 padding: EdgeInsets.all(Responsive.getSpacing(context)),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(Responsive.getSpacing(context)),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFF7A5CFF), // Vibrant Purple
-                            Color(0xFF3E6CF6), // Vibrant Blue
-                          ],
+                itemCount: importedWorkouts.length,
+                itemBuilder: (context, index) {
+                  final workout = importedWorkouts[index];
+                  return _ImportedWorkoutCard(
+                    workout: workout,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ImportedWorkoutDetailScreen(workoutId: workout.id),
                         ),
-                        borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF7A5CFF).withOpacity(0.3),
-                            blurRadius: 12,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: Container(
-                        padding: EdgeInsets.all(Responsive.getSpacing(context) * 0.5),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF7A5CFF), Color(0xFF3E6CF6)],
-                          ),
-                          borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context) * 0.5),
-                        ),
-                        child: Icon(
-                          Icons.download,
-                          color: Colors.white,
-                          size: Responsive.getIconSize(context),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: Responsive.getSpacing(context)),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Imported Workouts',
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          Text(
-                            'Manage your imported workout plans',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.white.withOpacity(0.9),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ImportWorkoutScreen(),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.add),
-                      style: IconButton.styleFrom(
-                        backgroundColor: const Color(0xFF7A5CFF),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                      );
+                    },
+                    onMoveToHome: () => _moveToHome(context, workoutProvider, workout),
+                    onMoveToWorkouts: () => _moveToWorkouts(context, workoutProvider, workout),
+                    onRename: () => _renameWorkout(context, workoutProvider, workout),
+                    onDelete: () => _deleteWorkout(context, workoutProvider, workout),
+                  );
+                },
               ),
-              
-              // Content
-              Expanded(
-                child: Consumer<WorkoutProvider>(
-                  builder: (context, provider, child) {
-                    final importedWorkouts = provider.workouts
-                        .where((w) => w.description.contains('Imported from web'))
-                        .toList();
-
-                    if (importedWorkouts.isEmpty) {
-                      return _buildEmptyState(context);
-                    }
-
-                    return ListView.builder(
-                      padding: EdgeInsets.all(Responsive.getSpacing(context)),
-                      itemCount: importedWorkouts.length,
-                      itemBuilder: (context, index) {
-                        final workout = importedWorkouts[index];
-                        return _ImportedWorkoutCard(
-                          workout: workout,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ImportedWorkoutDetailScreen(
-                                  workoutId: workout.id,
-                                ),
-                              ),
-                            );
-                          },
-                          onMoveToHome: () => _moveToHome(context, provider, workout),
-                          onMoveToWorkouts: () => _moveToWorkouts(context, provider, workout),
-                          onRename: () => _renameWorkout(context, provider, workout),
-                          onDelete: () => _deleteWorkout(context, provider, workout),
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -162,35 +83,33 @@ class ImportedWorkoutsScreen extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(Responsive.getSpacing(context) * 2),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF7A5CFF), Color(0xFF3E6CF6)],
-                ),
-                borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context) * 2),
+                color: const Color(0xFF7A5CFF).withOpacity(0.1),
+                shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.download_outlined,
+                Icons.cloud_download_outlined,
                 size: Responsive.getIconSize(context) * 2,
-                color: Colors.white,
+                color: const Color(0xFF7A5CFF),
               ),
             ),
             SizedBox(height: Responsive.getSpacing(context) * 2),
             Text(
-              'No Imported Workouts',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF0E1625),
-              ),
+              'No Imported Workouts Yet',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+              textAlign: TextAlign.center,
             ),
             SizedBox(height: Responsive.getSpacing(context)),
             Text(
-              'Import workout plans from the web to get started',
+              'Import workouts from your favorite websites and manage them here.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: const Color(0xFF7C8AA3),
-              ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: Responsive.getSpacing(context) * 2),
-            FilledButton.icon(
+            GradientButton(
               onPressed: () {
                 Navigator.push(
                   context,
@@ -199,15 +118,13 @@ class ImportedWorkoutsScreen extends StatelessWidget {
                   ),
                 );
               },
-              icon: const Icon(Icons.add),
-              label: const Text('Import Workout'),
-              style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF7A5CFF),
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(
-                  horizontal: Responsive.getSpacing(context) * 2,
-                  vertical: Responsive.getSpacing(context),
-                ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.add),
+                  SizedBox(width: 8),
+                  Text('Import Workout'),
+                ],
               ),
             ),
           ],
@@ -371,14 +288,14 @@ class _ImportedWorkoutCard extends StatelessWidget {
                           workout.name,
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: const Color(0xFF0E1625),
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                         SizedBox(height: Responsive.getSpacing(context) * 0.5),
                         Text(
                           '${workout.exercises.length} exercises',
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: const Color(0xFF7C8AA3),
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -445,7 +362,7 @@ class _ImportedWorkoutCard extends StatelessWidget {
                     ],
                     child: Icon(
                       Icons.more_vert,
-                      color: const Color(0xFF7C8AA3),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -454,13 +371,20 @@ class _ImportedWorkoutCard extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: FilledButton.icon(
-                      onPressed: onTap,
-                      icon: const Icon(Icons.play_arrow),
-                      label: const Text('Start Workout'),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF7A5CFF),
-                        foregroundColor: Colors.white,
+                    child: GradientButton(
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ImportedWorkoutDetailScreen(workoutId: workout.id),
+                        ),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.play_arrow),
+                          SizedBox(width: 8),
+                          Text('Start Workout'),
+                        ],
                       ),
                     ),
                   ),

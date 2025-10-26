@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/workout_provider.dart';
 import '../screens/workout_detail_screen.dart';
 import 'create_workout_screen.dart';
+import '../theme/energetic_fitness_theme.dart';
 import '../utils/responsive.dart';
 
 class ActiveWorkoutsScreen extends StatelessWidget {
