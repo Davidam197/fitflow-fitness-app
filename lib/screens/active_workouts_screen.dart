@@ -226,34 +226,40 @@ class _ActiveWorkoutCard extends StatelessWidget {
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: workout.category == 'Cardio' 
-                                    ? Colors.green.withOpacity(0.2)
-                                    : Colors.blue.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  workout.category,
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: workout.category == 'Cardio' ? Colors.green : Colors.blue,
-                                    fontWeight: FontWeight.w600,
+                              Flexible(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: workout.category == 'Cardio' 
+                                      ? Colors.green.withOpacity(0.2)
+                                      : Colors.blue.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    workout.category,
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: workout.category == 'Cardio' ? Colors.green : Colors.blue,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.orange.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  'In Progress',
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Colors.orange,
-                                    fontWeight: FontWeight.w600,
+                              Flexible(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    'In Progress',
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Colors.orange,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ),
