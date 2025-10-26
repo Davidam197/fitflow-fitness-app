@@ -454,21 +454,36 @@ class _ExerciseTileState extends State<_ExerciseTile> {
                   ),
                 ),
                 SizedBox(width: Responsive.getSpacing(context) * 0.5),
-                // Complete/Start button
-                SizedBox(
-                  height: Responsive.getSpacing(context) * 2.5,
-                  width: Responsive.getSpacing(context) * 2.5,
-                  child: FilledButton(
-                    style: FilledButton.styleFrom(
-                      backgroundColor: _isSubWorkout(ex) ? Colors.blue : Colors.green,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      padding: EdgeInsets.zero,
-                    ),
-                    onPressed: () => _handleExerciseClick(context, prov, w.id, ex),
-                    child: Icon(
-                      _isSubWorkout(ex) ? Icons.play_arrow : Icons.check, 
-                      color: Colors.white, 
-                      size: Responsive.getIconSize(context) * 0.8,
+                // Complete/Start/Reset button
+                Tooltip(
+                  message: _isSubWorkout(ex) 
+                    ? 'Start workout' 
+                    : ex.isDone 
+                      ? 'Reset exercise' 
+                      : 'Complete set',
+                  child: SizedBox(
+                    height: Responsive.getSpacing(context) * 2.5,
+                    width: Responsive.getSpacing(context) * 2.5,
+                    child: FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: _isSubWorkout(ex) 
+                          ? Colors.blue 
+                          : ex.isDone 
+                            ? Colors.orange 
+                            : Colors.green,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        padding: EdgeInsets.zero,
+                      ),
+                      onPressed: () => _handleExerciseClick(context, prov, w.id, ex),
+                      child: Icon(
+                        _isSubWorkout(ex) 
+                          ? Icons.play_arrow 
+                          : ex.isDone 
+                            ? Icons.refresh 
+                            : Icons.check, 
+                        color: Colors.white, 
+                        size: Responsive.getIconSize(context) * 0.8,
+                      ),
                     ),
                   ),
                 ),
@@ -502,8 +517,14 @@ class _ExerciseTileState extends State<_ExerciseTile> {
         ),
       );
     } else {
-      // Regular exercise - increment set
-      prov.incrementSet(workoutId, exercise.id);
+      // Regular exercise - check if completed to reset, otherwise increment
+      if (exercise.isDone) {
+        // Reset exercise to 0 completed sets
+        prov.toggleCompleteExercise(workoutId, exercise.id);
+      } else {
+        // Increment set
+        prov.incrementSet(workoutId, exercise.id);
+      }
     }
   }
 

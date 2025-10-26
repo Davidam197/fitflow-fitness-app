@@ -175,13 +175,22 @@ class SubWorkoutScreen extends StatelessWidget {
   }
 
   void _markExerciseComplete(BuildContext context, WorkoutProvider prov, String workoutId, int exerciseIndex) {
-    // Mark exercise as complete
+    // Mark exercise as complete or reset if already done
     final exercise = exercises[exerciseIndex];
-    prov.incrementSet(workoutId, exercise.id);
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${exercise.name} completed!')),
-    );
+    if (exercise.isDone) {
+      // Reset exercise to 0 completed sets
+      prov.toggleCompleteExercise(workoutId, exercise.id);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${exercise.name} reset!')),
+      );
+    } else {
+      // Increment set
+      prov.incrementSet(workoutId, exercise.id);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${exercise.name} completed!')),
+      );
+    }
   }
 
   void _startSubWorkout(BuildContext context, WorkoutProvider prov, String workoutId, String subWorkoutName) {
@@ -288,8 +297,11 @@ class _ExerciseCard extends StatelessWidget {
               ),
               IconButton(
                 onPressed: onComplete,
-                icon: const Icon(Icons.check_circle_outline, color: Color(0xFF3E6CF6)),
-                tooltip: 'Mark Complete',
+                icon: Icon(
+                  exercise.isDone ? Icons.refresh : Icons.check_circle_outline, 
+                  color: exercise.isDone ? Colors.orange : const Color(0xFF3E6CF6),
+                ),
+                tooltip: exercise.isDone ? 'Reset Exercise' : 'Mark Complete',
               ),
             ],
           ),
