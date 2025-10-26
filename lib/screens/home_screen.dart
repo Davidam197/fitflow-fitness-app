@@ -257,7 +257,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               NavigationController.navigateToTab(1);
             }
           ),
-          ...workouts.map((w) => Padding(
+          ...workouts.where((w) => !w.description.contains('Imported from web')).map((w) => Padding(
             padding: const EdgeInsets.only(bottom: 5),
             child: _WorkoutListCard(workoutId: w.id),
           )),

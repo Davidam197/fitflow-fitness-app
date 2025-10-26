@@ -113,7 +113,9 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
       // Provider not found; keep empty list
     }
 
-    final list = _filtered(all);
+    // Filter out imported workouts (they should only appear in Imported tab)
+    final nonImportedWorkouts = all.where((w) => !w.description.contains('Imported from web')).toList();
+    final list = _filtered(nonImportedWorkouts);
 
     return Scaffold(
       appBar: AppBar(

@@ -132,6 +132,7 @@ class ImportedWorkoutsScreen extends StatelessWidget {
                             );
                           },
                           onMoveToHome: () => _moveToHome(context, provider, workout),
+                          onMoveToWorkouts: () => _moveToWorkouts(context, provider, workout),
                           onDelete: () => _deleteWorkout(context, provider, workout),
                         );
                       },
@@ -226,6 +227,22 @@ class ImportedWorkoutsScreen extends StatelessWidget {
     );
   }
 
+  void _moveToWorkouts(BuildContext context, WorkoutProvider provider, workout) {
+    // Update workout to remove "Imported from web" from description
+    final updatedWorkout = workout.copyWith(
+      description: workout.description.replaceAll(' (Imported from web)', ''),
+    );
+    
+    provider.updateWorkout(updatedWorkout);
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Moved "${workout.name}" to Workouts'),
+        backgroundColor: const Color(0xFF4E6CF8),
+      ),
+    );
+  }
+
   void _deleteWorkout(BuildContext context, WorkoutProvider provider, workout) {
     showDialog(
       context: context,
@@ -260,12 +277,14 @@ class _ImportedWorkoutCard extends StatelessWidget {
   final dynamic workout;
   final VoidCallback onTap;
   final VoidCallback onMoveToHome;
+  final VoidCallback onMoveToWorkouts;
   final VoidCallback onDelete;
 
   const _ImportedWorkoutCard({
     required this.workout,
     required this.onTap,
     required this.onMoveToHome,
+    required this.onMoveToWorkouts,
     required this.onDelete,
   });
 
@@ -310,6 +329,9 @@ class _ImportedWorkoutCard extends StatelessWidget {
                         case 'move_to_home':
                           onMoveToHome();
                           break;
+                        case 'move_to_workouts':
+                          onMoveToWorkouts();
+                          break;
                         case 'delete':
                           onDelete();
                           break;
@@ -323,6 +345,16 @@ class _ImportedWorkoutCard extends StatelessWidget {
                             Icon(Icons.home, size: 20),
                             SizedBox(width: 8),
                             Text('Move to Home'),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'move_to_workouts',
+                        child: Row(
+                          children: [
+                            Icon(Icons.fitness_center, size: 20),
+                            SizedBox(width: 8),
+                            Text('Move to Workouts'),
                           ],
                         ),
                       ),
