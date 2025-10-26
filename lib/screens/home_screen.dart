@@ -7,7 +7,7 @@ import '../screens/create_workout_screen.dart';
 import '../screens/previous_workouts_screen.dart';
 import '../widgets/ff_widgets.dart';
 import '../navigation/navigation_controller.dart';
-import '../widgets/fitflow_header.dart';
+import '../widgets/fitflow_header_clean.dart';
 import '../utils/responsive.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -70,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final workouts = prov.workouts;
 
     return Scaffold(
-      appBar: FitFlowHeader(
+      appBar: FitFlowHeaderClean(
         title: 'FitFlow',
         subtitle: 'Your fitness journey starts here',
         actions: [
@@ -80,8 +80,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             onTap: () => Navigator.pushNamed(context, CreateWorkoutScreen.route),
           ),
         ],
-        height: 120,
-        centerTitle: true,
+        centerTitle: false,
       ),
       body: Container(
         decoration: const BoxDecoration(

@@ -43,14 +43,8 @@ class FitFlowHeader extends StatelessWidget implements PreferredSizeWidget {
             ),
           ),
 
-          // Subtle white tint + blur for the "glass" feel
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-            child: Container(
-              height: height,
-              color: Colors.white.withOpacity(0.06),
-            ),
-          ),
+          // Clean gradient only (no glass or fades)
+          // Intentionally no blur or overlays to keep a crisp, vibrant header
 
           // Content
           SafeArea(
@@ -123,7 +117,7 @@ class _PillButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = Colors.white.withOpacity(0.18);
+    final bg = Colors.white.withOpacity(0.22); // balanced for visibility
     final border = Colors.white.withOpacity(0.28);
     final tint = action.tint ?? Colors.white;
 
@@ -188,6 +182,7 @@ class _TitleBlock extends StatelessWidget {
             fontSize: 22,
             fontWeight: FontWeight.w800,
             letterSpacing: 0.2,
+            shadows: [Shadow(offset: Offset(0,1), blurRadius: 2, color: Colors.black26)],
           ),
         ),
         if (subtitle != null && subtitle!.trim().isNotEmpty) ...[
