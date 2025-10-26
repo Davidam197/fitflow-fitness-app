@@ -7,6 +7,7 @@ import '../providers/membership_provider.dart';
 import '../screens/create_workout_screen.dart';
 import '../screens/workout_detail_screen.dart';
 import '../screens/import_workout_screen.dart';
+import '../theme/energetic_fitness_theme.dart';
 import '../utils/responsive.dart';
 
 class WorkoutsScreen extends StatefulWidget {
@@ -118,224 +119,38 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
     final list = _filtered(nonImportedWorkouts);
 
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: false,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 1,
-        title: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: Responsive.getSpacing(context),
-            vertical: Responsive.getSpacing(context) * 0.5,
-          ),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                const Color(0xFF4E6CF8), // Vibrant Blue
-                const Color(0xFF3ECF8E), // Fresh Green
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF4E6CF8).withOpacity(0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: EdgeInsets.all(Responsive.getSpacing(context) * 0.5),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      const Color(0xFF4E6CF8), // Blue
-                      const Color(0xFF3ECF8E), // Green
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context) * 0.5),
-                ),
-                child: Icon(
-                  Icons.fitness_center,
-                  color: Colors.white,
-                  size: Responsive.getIconSize(context) * 0.7,
-                ),
-              ),
-              SizedBox(width: Responsive.getSpacing(context) * 0.5),
-              Text(
-                'Workouts',
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: Responsive.getTitleFontSize(context),
-                  color: Colors.white, // White for contrast
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
+      appBar: GradientAppBar(
+        title: 'Workouts',
         actions: [
-          // Add right margin to the actions
-          Padding(
-            padding: EdgeInsets.only(right: Responsive.getSpacing(context)),
-            child: LayoutBuilder(
-            builder: (context, constraints) {
-              final screenWidth = constraints.maxWidth;
-              final isTablet = screenWidth > 600;
-              
-              if (isTablet) {
-                // Tablet: Show both buttons with labels
-                return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Import button
-                    Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3ECF8E), // Green for import
-                        borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF3ECF8E).withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: FilledButton.icon(
-                        onPressed: () => Navigator.of(context).pushNamed(ImportWorkoutScreen.route),
-                        icon: Icon(Icons.web, size: Responsive.getIconSize(context) * 0.6),
-                        label: Text(
-                          'Import',
-                          style: TextStyle(fontSize: Responsive.getBodyFontSize(context) * 0.8),
-                        ),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          foregroundColor: Colors.white,
-                          shadowColor: Colors.transparent,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: Responsive.getSpacing(context) * 0.75,
-                            vertical: Responsive.getSpacing(context) * 0.5,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: Responsive.getSpacing(context) * 0.75),
-                    // Create button
-                    Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF4E6CF8), // Solid blue (no gradient)
-                        borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF4E6CF8).withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: FilledButton.icon(
-                        onPressed: () => Navigator.of(context).pushNamed(CreateWorkoutScreen.route),
-                        icon: Icon(Icons.add, size: Responsive.getIconSize(context) * 0.6),
-                        label: Text(
-                          'Create',
-                          style: TextStyle(fontSize: Responsive.getBodyFontSize(context) * 0.8),
-                        ),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          foregroundColor: Colors.white,
-                          shadowColor: Colors.transparent,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: Responsive.getSpacing(context) * 0.75,
-                            vertical: Responsive.getSpacing(context) * 0.5,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              } else {
-                // Phone: Show icon-only buttons to save space
-                return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Import button (icon only)
-                    Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3ECF8E), // Green for import
-                        borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF3ECF8E).withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: IconButton(
-                        onPressed: () => Navigator.of(context).pushNamed(ImportWorkoutScreen.route),
-                        icon: Icon(Icons.web, size: Responsive.getIconSize(context) * 0.7),
-                        tooltip: 'Import Workout',
-                        style: IconButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.all(Responsive.getSpacing(context) * 0.5),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: Responsive.getSpacing(context) * 0.5),
-                    // Create button (icon only)
-                    Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF4E6CF8), // Solid blue (no gradient)
-                        borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF4E6CF8).withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: IconButton(
-                        onPressed: () => Navigator.of(context).pushNamed(CreateWorkoutScreen.route),
-                        icon: Icon(Icons.add, size: Responsive.getIconSize(context) * 0.7),
-                        tooltip: 'Create Workout',
-                        style: IconButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.all(Responsive.getSpacing(context) * 0.5),
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              }
-            },
+          GradientButton(
+            onPressed: () => Navigator.of(context).pushNamed(ImportWorkoutScreen.route),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.web, size: 18),
+                SizedBox(width: 8),
+                Text('Import'),
+              ],
             ),
           ),
+          const SizedBox(width: 12),
+          GradientButton(
+            onPressed: () => Navigator.of(context).pushNamed(CreateWorkoutScreen.route),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.add, size: 18),
+                SizedBox(width: 8),
+                Text('Create'),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
         ],
       ),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              const Color(0xFFB4E1FF), // Cool steel blue start
-              const Color(0xFFE4EEFF), // Cool steel blue end
-            ],
-          ),
+        decoration: const BoxDecoration(
+          color: Color.fromRGBO(252, 252, 255, 1.0), // Off-white with slight blue tint
         ),
         child: ListView(
           padding: EdgeInsets.zero,

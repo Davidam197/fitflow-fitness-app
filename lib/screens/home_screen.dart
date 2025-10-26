@@ -7,6 +7,7 @@ import '../screens/create_workout_screen.dart';
 import '../screens/previous_workouts_screen.dart';
 import '../widgets/ff_widgets.dart';
 import '../navigation/navigation_controller.dart';
+import '../theme/energetic_fitness_theme.dart';
 import '../utils/responsive.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -69,104 +70,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final workouts = prov.workouts;
 
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: false,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 1,
-        title: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: Responsive.getSpacing(context),
-            vertical: Responsive.getSpacing(context) * 0.5,
-          ),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                const Color(0xFFA3C9FF), // Sky blue
-                const Color(0xFFC9B8FF), // Lavender
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF3E6CF6).withOpacity(0.2),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'FitFlow',
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: Responsive.getTitleFontSize(context),
-                  color: const Color(0xFF0E1625), // Dark navy
-                ),
-              ),
-              Text(
-                'Your personal trainer',
-                style: TextStyle(
-                  fontSize: Responsive.getCaptionFontSize(context),
-                  color: const Color(0xFF7C8AA3), // Subtext
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
+      appBar: GradientAppBar(
+        title: 'FitFlow',
         actions: [
-          Container(
-            margin: EdgeInsets.only(right: Responsive.getSpacing(context)),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF3E6CF6), // Vibrant blue
-                  const Color(0xFF7A5CFF), // Violet
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF3E6CF6).withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
+          GradientButton(
+            onPressed: () => Navigator.pushNamed(context, CreateWorkoutScreen.route),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.add, size: 18),
+                SizedBox(width: 8),
+                Text('Create'),
               ],
             ),
-            child: FilledButton.icon(
-              onPressed: () => Navigator.pushNamed(context, CreateWorkoutScreen.route),
-              icon: const Icon(Icons.add, size: 18),
-              label: const Text('Create'),
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                foregroundColor: Colors.white,
-                shadowColor: Colors.transparent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
-                ),
-              ),
-            ),
           ),
+          const SizedBox(width: 16),
         ],
       ),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              const Color(0xFFF8FAFF), // Soft gradient base
-              const Color(0xFFE8F0FF), // Gradient end
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
+        decoration: const BoxDecoration(
+          color: Color.fromRGBO(252, 252, 255, 1.0), // Off-white with slight blue tint
         ),
         child: RefreshIndicator(
           onRefresh: () async {
