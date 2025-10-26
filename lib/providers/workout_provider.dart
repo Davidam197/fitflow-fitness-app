@@ -76,14 +76,29 @@ class WorkoutProvider extends ChangeNotifier {
     for (final w in workouts) {
       final key = w.name.toLowerCase();
       if (!existingNames.contains(key)) {
-        toAdd.add(w);
+        // Ensure imported workouts have the proper description for filtering
+        final importedWorkout = Workout(
+          id: w.id,
+          name: w.name,
+          category: w.category,
+          description: w.description.contains('Imported from web') 
+              ? w.description 
+              : '${w.description} (Imported from web)',
+          durationMinutes: w.durationMinutes,
+          difficulty: w.difficulty,
+          exercises: w.exercises,
+        );
+        toAdd.add(importedWorkout);
         existingNames.add(key);
       } else {
+        // Handle duplicates by modifying the name but keeping the imported description
         toAdd.add(Workout(
           id: w.id,
           name: '${w.name} (Imported)',
           category: w.category,
-          description: w.description,
+          description: w.description.contains('Imported from web') 
+              ? w.description 
+              : '${w.description} (Imported from web)',
           durationMinutes: w.durationMinutes,
           difficulty: w.difficulty,
           exercises: w.exercises,
@@ -92,6 +107,12 @@ class WorkoutProvider extends ChangeNotifier {
     }
 
     _workouts.addAll(toAdd);
+    
+    // Save all imported workouts to the database
+    for (final workout in toAdd) {
+      await _repo.upsert(workout);
+    }
+    
     notifyListeners();
   }
 
