@@ -118,7 +118,7 @@ class _ActiveWorkoutCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final progress = workout.progressPercentage ?? 0.0;
+    final progress = workout.progressPercent ?? 0;
     final exercises = workout.exercises ?? [];
     final completedExercises = exercises.where((ex) => ex.isCompleted).length;
     final totalExercises = exercises.length;
@@ -238,7 +238,7 @@ class _ActiveWorkoutCard extends StatelessWidget {
                             ),
                       ),
                       Text(
-                        '${progress.toStringAsFixed(0)}%',
+                        '$progress%',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: const Color(0xFF20C38B),
                               fontWeight: FontWeight.w700,
