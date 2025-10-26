@@ -40,12 +40,8 @@ class FitFlowSliverHeader extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(22)),
       ),
-      // Foreground (collapsed) title row
-      title: _CollapsedTitleRow(
-        title: title,
-        actions: actions,
-        centerTitle: centerTitle,
-      ),
+      // Remove title to avoid duplication - handle everything in flexibleSpace
+      title: null,
       // Fancy background that expands/collapses
       flexibleSpace: LayoutBuilder(
         builder: (context, constraints) {
@@ -60,6 +56,13 @@ class FitFlowSliverHeader extends StatelessWidget {
               // Pass collapse factor to fade subtitle and resize spacing
               t: t,
             ),
+            // Handle collapsed state properly
+            titlePadding: EdgeInsets.zero,
+            title: t > 0.5 ? _CollapsedTitleRow(
+              title: title,
+              actions: actions,
+              centerTitle: centerTitle,
+            ) : null,
           );
         },
       ),

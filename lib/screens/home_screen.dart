@@ -72,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Scaffold(
       appBar: FitFlowHeader(
         title: 'FitFlow',
-        subtitle: null,
+        subtitle: 'Your fitness journey starts here',
         actions: [
           HeaderAction(
             icon: Icons.add,
@@ -80,10 +80,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             onTap: () => Navigator.pushNamed(context, CreateWorkoutScreen.route),
           ),
         ],
+        height: 120,
+        centerTitle: true,
       ),
       body: Container(
         decoration: const BoxDecoration(
-          color: Color.fromRGBO(252, 252, 255, 1.0), // Off-white with slight blue tint
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color.fromRGBO(252, 252, 255, 1.0), // Off-white with slight blue tint
+              Color.fromRGBO(248, 250, 255, 1.0), // Slightly more blue-tinted
+            ],
+          ),
         ),
         child: RefreshIndicator(
           onRefresh: () async {
