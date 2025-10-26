@@ -336,23 +336,28 @@ class _ActiveWorkoutCard extends StatelessWidget {
                 
                 // Stats row
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _StatItem(
-                      icon: Icons.access_time,
-                      label: '${workout.durationMinutes} min',
-                      color: workout.category == 'Cardio' ? Colors.green : Colors.blue,
+                    Flexible(
+                      child: _StatItem(
+                        icon: Icons.access_time,
+                        label: '${workout.durationMinutes} min',
+                        color: workout.category == 'Cardio' ? Colors.green : Colors.blue,
+                      ),
                     ),
-                    const SizedBox(width: 24),
-                    _StatItem(
-                      icon: Icons.fitness_center,
-                      label: '${workout.exercises.length} exercises',
-                      color: workout.category == 'Cardio' ? Colors.green : Colors.blue,
+                    Flexible(
+                      child: _StatItem(
+                        icon: Icons.fitness_center,
+                        label: '${workout.exercises.length} exercises',
+                        color: workout.category == 'Cardio' ? Colors.green : Colors.blue,
+                      ),
                     ),
-                    const SizedBox(width: 24),
-                    _StatItem(
-                      icon: Icons.trending_up,
-                      label: workout.difficulty,
-                      color: workout.category == 'Cardio' ? Colors.green : Colors.blue,
+                    Flexible(
+                      child: _StatItem(
+                        icon: Icons.trending_up,
+                        label: workout.difficulty,
+                        color: workout.category == 'Cardio' ? Colors.green : Colors.blue,
+                      ),
                     ),
                   ],
                 ),
@@ -408,11 +413,15 @@ class _StatItem extends StatelessWidget {
           child: Icon(icon, size: 16, color: color),
         ),
         const SizedBox(width: 6),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
+        Flexible(
+          child: Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
           ),
         ),
       ],
