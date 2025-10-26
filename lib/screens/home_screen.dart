@@ -7,7 +7,8 @@ import '../screens/create_workout_screen.dart';
 import '../screens/previous_workouts_screen.dart';
 import '../widgets/ff_widgets.dart';
 import '../navigation/navigation_controller.dart';
-import '../widgets/fitflow_header_clean.dart';
+import '../widgets/fitflow_sliver_header.dart';
+import '../widgets/fitflow_header.dart' show HeaderAction;
 import '../utils/responsive.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -70,29 +71,34 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final workouts = prov.workouts;
 
     return Scaffold(
-      appBar: FitFlowHeaderClean(
-        title: 'FitFlow',
-        subtitle: 'Your fitness journey starts here',
-        actions: [
-          HeaderAction(
-            icon: Icons.add,
-            label: 'Create',
-            onTap: () => Navigator.pushNamed(context, CreateWorkoutScreen.route),
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) => [
+          FitFlowSliverHeader(
+            title: 'FitFlow',
+            subtitle: 'Your fitness journey starts here',
+            actions: [
+              HeaderAction(
+                icon: Icons.add,
+                label: 'Create',
+                onTap: () => Navigator.pushNamed(context, CreateWorkoutScreen.route),
+              ),
+            ],
+            expandedHeight: 156,
+            toolbarHeight: kToolbarHeight,
+            centerTitle: true,
           ),
         ],
-        centerTitle: false,
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color.fromRGBO(252, 252, 255, 1.0), // Off-white with slight blue tint
-              Color.fromRGBO(248, 250, 255, 1.0), // Slightly more blue-tinted
-            ],
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color.fromRGBO(252, 252, 255, 1.0), // Off-white with slight blue tint
+                Color.fromRGBO(248, 250, 255, 1.0), // Slightly more blue-tinted
+              ],
+            ),
           ),
-        ),
         child: RefreshIndicator(
           onRefresh: () async {
             // Simulate refresh delay
@@ -189,6 +195,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ],
           ),
         ),
+      ),
       ),
     );
   }
