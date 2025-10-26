@@ -225,10 +225,13 @@ class _ActiveWorkoutCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Flexible(
+                                fit: FlexFit.loose,
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  constraints: const BoxConstraints(maxWidth: 120),
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
                                     color: workout.category == 'Cardio' 
                                       ? Colors.green.withOpacity(0.2)
@@ -240,26 +243,32 @@ class _ActiveWorkoutCard extends StatelessWidget {
                                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                       color: workout.category == 'Cardio' ? Colors.green : Colors.blue,
                                       fontWeight: FontWeight.w600,
+                                      fontSize: 11,
                                     ),
                                     overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 6),
                               Flexible(
+                                fit: FlexFit.loose,
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  constraints: const BoxConstraints(maxWidth: 100),
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
                                     color: Colors.orange.withOpacity(0.2),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
-                                    'In Progress',
+                                    'Active',
                                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                       color: Colors.orange,
                                       fontWeight: FontWeight.w600,
+                                      fontSize: 11,
                                     ),
                                     overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
                                   ),
                                 ),
                               ),
