@@ -133,6 +133,7 @@ class ImportedWorkoutsScreen extends StatelessWidget {
                           },
                           onMoveToHome: () => _moveToHome(context, provider, workout),
                           onMoveToWorkouts: () => _moveToWorkouts(context, provider, workout),
+                          onRename: () => _renameWorkout(context, provider, workout),
                           onDelete: () => _deleteWorkout(context, provider, workout),
                         );
                       },
@@ -211,6 +212,60 @@ class ImportedWorkoutsScreen extends StatelessWidget {
     );
   }
 
+  void _renameWorkout(BuildContext context, WorkoutProvider provider, workout) {
+    final nameController = TextEditingController(text: workout.name);
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Rename Workout'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Enter a new name for this workout:'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                labelText: 'Workout Name',
+                border: OutlineInputBorder(),
+                hintText: 'Enter workout name...',
+              ),
+              autofocus: true,
+              textCapitalization: TextCapitalization.words,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final newName = nameController.text.trim();
+              if (newName.isNotEmpty && newName != workout.name) {
+                final updatedWorkout = workout.copyWith(name: newName);
+                provider.updateWorkout(updatedWorkout);
+                
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Renamed to "$newName"'),
+                    backgroundColor: const Color(0xFF7A5CFF),
+                  ),
+                );
+              } else {
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('Rename'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _moveToHome(BuildContext context, WorkoutProvider provider, workout) {
     // Update workout to remove "Imported from web" from description
     final updatedWorkout = workout.copyWith(
@@ -278,6 +333,7 @@ class _ImportedWorkoutCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onMoveToHome;
   final VoidCallback onMoveToWorkouts;
+  final VoidCallback onRename;
   final VoidCallback onDelete;
 
   const _ImportedWorkoutCard({
@@ -285,6 +341,7 @@ class _ImportedWorkoutCard extends StatelessWidget {
     required this.onTap,
     required this.onMoveToHome,
     required this.onMoveToWorkouts,
+    required this.onRename,
     required this.onDelete,
   });
 
@@ -326,6 +383,9 @@ class _ImportedWorkoutCard extends StatelessWidget {
                   PopupMenuButton<String>(
                     onSelected: (value) {
                       switch (value) {
+                        case 'rename':
+                          onRename();
+                          break;
                         case 'move_to_home':
                           onMoveToHome();
                           break;
@@ -338,6 +398,16 @@ class _ImportedWorkoutCard extends StatelessWidget {
                       }
                     },
                     itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'rename',
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit, size: 20),
+                            SizedBox(width: 8),
+                            Text('Rename'),
+                          ],
+                        ),
+                      ),
                       const PopupMenuItem(
                         value: 'move_to_home',
                         child: Row(
