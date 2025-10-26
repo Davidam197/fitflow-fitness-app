@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/workout_provider.dart';
-import '../theme/energetic_fitness_theme.dart';
+import '../widgets/fitflow_header.dart';
 import '../utils/responsive.dart';
 import 'import_workout_screen.dart';
 import 'imported_workout_detail_screen.dart';
@@ -17,11 +17,14 @@ class ImportedWorkoutsScreen extends StatelessWidget {
         .toList();
 
     return Scaffold(
-      appBar: GradientAppBar(
+      appBar: FitFlowHeader(
         title: 'Imported Workouts',
+        subtitle: 'Manage your imported workout plans',
         actions: [
-          GradientButton(
-            onPressed: () {
+          HeaderAction(
+            icon: Icons.add,
+            label: 'Import',
+            onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -29,16 +32,7 @@ class ImportedWorkoutsScreen extends StatelessWidget {
                 ),
               );
             },
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.add, size: 18),
-                SizedBox(width: 8),
-                Text('Import'),
-              ],
-            ),
           ),
-          const SizedBox(width: 16),
         ],
       ),
       body: Container(
@@ -109,7 +103,7 @@ class ImportedWorkoutsScreen extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             SizedBox(height: Responsive.getSpacing(context) * 2),
-            GradientButton(
+            ElevatedButton.icon(
               onPressed: () {
                 Navigator.push(
                   context,
@@ -118,13 +112,18 @@ class ImportedWorkoutsScreen extends StatelessWidget {
                   ),
                 );
               },
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.add),
-                  SizedBox(width: 8),
-                  Text('Import Workout'),
-                ],
+              icon: const Icon(Icons.add),
+              label: const Text('Import Workout'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF5B7CFF),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(
+                  horizontal: Responsive.getSpacing(context) * 2,
+                  vertical: Responsive.getSpacing(context),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
+                ),
               ),
             ),
           ],
@@ -371,20 +370,24 @@ class _ImportedWorkoutCard extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: GradientButton(
+                    child: ElevatedButton.icon(
                       onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => ImportedWorkoutDetailScreen(workoutId: workout.id),
                         ),
                       ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.play_arrow),
-                          SizedBox(width: 8),
-                          Text('Start Workout'),
-                        ],
+                      icon: const Icon(Icons.play_arrow),
+                      label: const Text('Start Workout'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF5B7CFF),
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(
+                          vertical: Responsive.getSpacing(context),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(Responsive.getBorderRadius(context)),
+                        ),
                       ),
                     ),
                   ),

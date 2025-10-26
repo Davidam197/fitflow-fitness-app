@@ -7,7 +7,7 @@ import '../providers/membership_provider.dart';
 import '../screens/create_workout_screen.dart';
 import '../screens/workout_detail_screen.dart';
 import '../screens/import_workout_screen.dart';
-import '../theme/energetic_fitness_theme.dart';
+import '../widgets/fitflow_header.dart';
 import '../utils/responsive.dart';
 
 class WorkoutsScreen extends StatefulWidget {
@@ -119,33 +119,20 @@ class _WorkoutsScreenState extends State<WorkoutsScreen> {
     final list = _filtered(nonImportedWorkouts);
 
     return Scaffold(
-      appBar: GradientAppBar(
+      appBar: FitFlowHeader(
         title: 'Workouts',
+        subtitle: 'Search, filter, and manage plans',
         actions: [
-          GradientButton(
-            onPressed: () => Navigator.of(context).pushNamed(ImportWorkoutScreen.route),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.web, size: 18),
-                SizedBox(width: 8),
-                Text('Import'),
-              ],
-            ),
+          HeaderAction(
+            icon: Icons.library_add_outlined,
+            label: 'Import',
+            onTap: () => Navigator.of(context).pushNamed(ImportWorkoutScreen.route),
           ),
-          const SizedBox(width: 12),
-          GradientButton(
-            onPressed: () => Navigator.of(context).pushNamed(CreateWorkoutScreen.route),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.add, size: 18),
-                SizedBox(width: 8),
-                Text('Create'),
-              ],
-            ),
+          HeaderAction(
+            icon: Icons.add,
+            label: 'Create',
+            onTap: () => Navigator.of(context).pushNamed(CreateWorkoutScreen.route),
           ),
-          const SizedBox(width: 16),
         ],
       ),
       body: Container(

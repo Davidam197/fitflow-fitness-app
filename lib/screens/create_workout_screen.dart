@@ -6,7 +6,7 @@ import '../providers/workout_provider.dart';
 import '../providers/membership_provider.dart';
 import 'add_exercise_screen.dart';
 import 'import_workout_screen.dart';
-import '../theme/energetic_fitness_theme.dart';
+import '../widgets/fitflow_header.dart';
 
 class CreateWorkoutScreen extends StatefulWidget {
   static const route = '/create';
@@ -34,28 +34,24 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
     final prov = context.watch<WorkoutProvider>();
 
     return Scaffold(
-      appBar: GradientAppBar(
+      appBar: FitFlowHeader(
         title: 'Create Workout',
+        subtitle: null,
         actions: [
-          GradientButton(
-            onPressed: () async {
+          HeaderAction(
+            icon: Icons.library_add_outlined,
+            label: 'Import',
+            onTap: () async {
               final result = await Navigator.pushNamed(context, ImportWorkoutScreen.route);
               if (result == true && mounted) {
                 Navigator.pop(context, true); // Return to workouts screen
               }
             },
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.web, size: 18),
-                SizedBox(width: 8),
-                Text('Import'),
-              ],
-            ),
           ),
-          const SizedBox(width: 12),
-          GradientButton(
-            onPressed: () async {
+          HeaderAction(
+            icon: Icons.save,
+            label: 'Save',
+            onTap: () async {
               if (!_form.currentState!.validate()) return;
               _form.currentState!.save();
 
@@ -86,9 +82,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
               await prov.saveWorkout(w);
               if (mounted) Navigator.pop(context);
             },
-            child: const Text('Save'),
           ),
-          const SizedBox(width: 16),
         ],
       ),
       floatingActionButton: (!routineMode)

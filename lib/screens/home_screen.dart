@@ -7,7 +7,7 @@ import '../screens/create_workout_screen.dart';
 import '../screens/previous_workouts_screen.dart';
 import '../widgets/ff_widgets.dart';
 import '../navigation/navigation_controller.dart';
-import '../theme/energetic_fitness_theme.dart';
+import '../widgets/fitflow_header.dart';
 import '../utils/responsive.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -70,21 +70,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final workouts = prov.workouts;
 
     return Scaffold(
-      appBar: GradientAppBar(
+      appBar: FitFlowHeader(
         title: 'FitFlow',
+        subtitle: null,
         actions: [
-          GradientButton(
-            onPressed: () => Navigator.pushNamed(context, CreateWorkoutScreen.route),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.add, size: 18),
-                SizedBox(width: 8),
-                Text('Create'),
-              ],
-            ),
+          HeaderAction(
+            icon: Icons.add,
+            label: 'Create',
+            onTap: () => Navigator.pushNamed(context, CreateWorkoutScreen.route),
           ),
-          const SizedBox(width: 16),
         ],
       ),
       body: Container(
